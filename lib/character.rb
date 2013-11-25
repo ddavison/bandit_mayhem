@@ -1,4 +1,6 @@
 require './lib/inventory'
+require './lib/item'
+require 'colorize'
 
 module BanditMayhem
   class Character
@@ -7,16 +9,18 @@ module BanditMayhem
 
     def initialize(stats)
       @inventory = BanditMayhem::Inventory.new
-      @stats = stats
 
-      stats.each do |stats|
-        
+      @stats = {}
+
+      stats.each do |k,v|
+        set_av("base_#{k}", v)
+        set_av(k, v)
       end
     end
 
     # gets an attribute value
     def get_av(stat)
-      puts "could not get unknown av ['#{stat}']" if @stats[stat.to_sym].nil?
+      puts "could not get unknown av ['#{stat}']".red if @stats[stat.to_sym].nil?
       @stats[stat.to_sym]
     end
 
@@ -53,7 +57,7 @@ module BanditMayhem
           end
         end
       else
-        puts "You do not have an item currently with the id/name [#{arg}]"
+        puts "you do not have an item currently with the id/name [#{arg}]".red
       end
     end
 
@@ -62,7 +66,7 @@ module BanditMayhem
         if arg.is_a? Integer
           @inventory.slots.delete(arg.to_i) # TODO: figure out why it's not deleting an item correctly.
         elsif arg.is_a? String
-          puts "destroy_item!(#{arg}): not implemented."
+          puts "destroy_item!(#{arg}): not implemented.".red
         end        
       end
     end
@@ -83,8 +87,42 @@ module BanditMayhem
       @stats.merge!(new_stats)
     end
 
+    # equip a Weapon object.
     def equip!(weapon)
-      
+      if weapon.is_weapon?
+        @weapon = weapon
+
+        # modify the stats.
+        new_str = @weapon.get_property('str').to_i + get_av('str')
+        set_av('str', new_str.to_i)
+      else
+        puts "you tried to equip something that is not a weapon.".red
+      end
+    end
+
+    def loot(target)
+      if target.is_dead?
+        # gold = target_health * ((attacked+target_attacks) / defense)
+        gold = target.get_av('base_health') * get_av('attacks')
+
+        set_av('gold',
+          get_av('gold') + gold
+        )
+        
+        puts "You got #{gold} Gold!".yellow
+      else
+        puts "cannot loot something thats not dead".red
+      end
+    end
+
+    def show_inventory
+      inventory.slots.each do |item|
+        puts inventory.slots.index(item).to_s + ". " + item.get_property('name').green + " : " + item.get_property('description').green
+      end
+    end
+
+    def is_dead?
+      get_av('health').to_i <= 0
     end
   end
 end

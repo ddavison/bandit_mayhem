@@ -1,50 +1,56 @@
+require 'colorize'
 require './lib/characters/player'
+require './lib/commands'
+require './lib/campaign'
 
 module BanditMayhem
   class Game
-    attr_accessor :player, :quit
+    attr_accessor :player, :quit, :cmds
 
     def initialize
       @cmds = []
-      @player = BanditMayhem::Player.new({name: "Nigel"})
+      @campaign = BanditMayhem::Campaign.new
+      @player = BanditMayhem::Characters::Player.new({name: "Nigel"})
+      @command_proc = BanditMayhem::Commands.new(self)
 
       # give the player 10 potions to start with.
       @player.give([
-        BanditMayhem::Items::HealthPotion.new,
-        BanditMayhem::Items::HealthPotion.new,
-        BanditMayhem::Items::HealthPotion.new,
-        BanditMayhem::Items::HealthPotion.new,
-        BanditMayhem::Items::HealthPotion.new,
-        BanditMayhem::Items::HealthPotion.new,
-        BanditMayhem::Items::HealthPotion.new,
         BanditMayhem::Items::HealthPotion.new,
         BanditMayhem::Items::HealthPotion.new,
         BanditMayhem::Items::HealthPotion.new
       ])
 
       @quit = false
+
+      Game.cls
+      puts "\t\tWelcome to BANDIT MAYHEM, #{@player.get_av('name')}\n\n".yellow
     end
 
     # This is the main game loop.
     def main
-      update
       return quit = true if @player.get_av('health') <= 0
+      update
+    end
+
+    def self.cls
+      system "clear" unless system "cls"
     end
 
     def update
-      # system "clear" unless system "cls"
-      puts "\n------ DISPLAY ------"
-      # show health
-      puts "__Health__"
-      p @player.get_av('health')
-      puts
 
-      # show the inventory
-      puts "__Inventory__"
-      
-      @player.inventory.slots.each do |item|
-        puts @player.inventory.slots.index(item).to_s + ". " + item.get_property('name') + " : " + item.get_property('description')
+      # puts "\n------ DISPLAY ------"
+      # show health
+      puts "\n__Health__"
+      puts @player.get_av('health').to_s.red
+      puts "\n__Gold__"
+      puts @player.get_av('gold').to_s.yellow
+
+      if @player.weapon.nil?
+        puts "You are currently unarmed with [#{@player.get_av('str')}] str.".green
+      else
+        puts "You currently have a [#{@player.weapon.get_property('name')}] equipped.".green
       end
+
       
       puts "Enter a command (type /help for commands) : "
       STDOUT.flush
@@ -56,23 +62,101 @@ module BanditMayhem
     def execute(cmd)
       @cmds << cmd
 
-      if cmd.start_with?('/') # its a command.
-        full_cmd = cmd.gsub(/\//, '')
-        command_name = full_cmd.split(" ").first # the actual command name.
-        params = full_cmd.split(" ") # the parameters passed to the command.
-        params.shift
+      full_cmd = cmd.gsub(/\//, '')
+      command_name = full_cmd.split(" ").first # the actual command name.
+      params = full_cmd.split(" ") # the parameters passed to the command.
+      params.shift
 
-        if    command_name.eql? 'die' #quits the game
-          @quit = true
-        elsif command_name.eql? 'history' # outputs the history of commands.
-          puts @cmds
-        elsif command_name.eql? 'get_av'  # outputs an av
-          params.each do |av|
-            puts @player.get_av(av)
-          end
-        elsif command_name.eql? 'use' # use an item
-          @player.use_item(params.first.to_i)
-        end
+      begin
+        @command_proc.send("#{command_name}", params)
+      rescue TypeError
+        puts "unknown command [#{command_name}]".red
+      end
+    end
+
+    # ==== MAIN BATTLE FUNC === #
+    def battle(enemy)
+      player.set_av('attacks', 0)
+      enemy.set_av('attacks', 0)
+
+      @in_battle = true
+      player = @player
+
+      # player will always go first.
+      players_turn = true
+
+      Game.cls
+      
+      puts "\t\t\t\tBATTLING: #{enemy.get_av('name')}\n\n".yellow
+      
+      while @in_battle
+        puts "Your health: " + player.get_av('health').to_s.red
+        puts "Their health: " + enemy.get_av('health').to_s.red
+        puts "------------------------"
+
+        if players_turn
+          puts "Your turn...".green
+          fight_menu(enemy)
+
+          player.loot(enemy) if enemy.is_dead?
+
+          players_turn = false
+        else
+          # for now, all the enemy will do, is attack.
+          puts "#{enemy.get_av('name')}'s turn...".red
+
+          attack(enemy, player)
+          players_turn = true
+        end       
+      end
+    end
+private
+    def attack(src, dst)
+      sleep(1)
+      total_dmg = (src.get_av('str') - dst.get_av('def'))
+
+      dst.set_av('health',
+        dst.get_av('health') - total_dmg
+      )
+
+      puts "\n" + src.get_av('name').to_s.red + " attacked " + dst.get_av('name').to_s.blue + " for " + total_dmg.to_s.green + " dmg.\n-----------------"
+
+      src.set_av('attacks',
+        src.get_av('attacks').to_i + 1
+      )
+
+      if dst.is_dead?
+        puts src.get_av('name').to_s.red + " has slain " + dst.get_av('name').to_s.blue
+        @in_battle = false
+      end
+    end
+
+    def fight_menu(enemy)
+      puts "Fight options..."
+      puts "----------------"
+      puts "1. " + "Attack".red
+      puts "2. " + "Run".yellow
+      puts "3. " + "Use item".blue
+      puts "Enter an option:"
+
+      STDOUT.flush
+      cmd = gets.chomp
+      cmd = cmd.to_i
+
+      if cmd.eql? 1
+        # attack
+        attack(@player, enemy)
+      elsif cmd.eql? 2
+        # run away
+        @in_battle = false
+        puts "You ran away".green
+      elsif cmd.eql? 3
+        # show the inventory, then let them choose.
+        @player.show_inventory
+        puts "Enter an item to use:"
+        STDOUT.flush
+        item = gets.chomp
+        @player.use_item(item.to_i)
       end
     end
   end
@@ -83,7 +167,7 @@ if __FILE__ == $0
 
   while true
     break if game.quit
-    game.main# loop
+    game.main # loop
   end
-  puts "thanks for playing bandit mayhem!"
+  puts "thanks for playing bandit mayhem!".yellow
 end
