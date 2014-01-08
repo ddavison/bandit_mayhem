@@ -6,7 +6,7 @@ require './lib/campaign'
 
 module BanditMayhem
   module ZOrder
-    Background, Player, UI = *0..2
+    Cursor, Background, Player, UI = *0..3
   end
 
   class Game < Gosu::Window
@@ -17,6 +17,7 @@ module BanditMayhem
       super 1024, 768, false
       self.caption = 'Bandit Mayhem'
       @background_image = Gosu::Image.new(self, './lib/media/bg.bmp', true)
+      @cursor = Gosu::Image.new(self, './lib/media/cursor.png')
 
       @cmds = []
       @campaign = BanditMayhem::Campaign.new
@@ -48,10 +49,18 @@ module BanditMayhem
     end
 
     def draw
+      @cursor.draw(self.mouse_x, self.mouse_y, ZOrder::Cursor)
       @background_image.draw(0, 0, ZOrder::Background)
 
       @font.draw("Health: #{@player.get_av('health')}", 500, 10, ZOrder::UI, 1.0, 1.0, 0xffff0000)
       @font.draw("Gold: #{@player.get_av('gold')}", 500, 30, ZOrder::UI, 1.0, 1.0, 0xffffff00)
+
+      @font.draw('Inventory:', 500, 55, ZOrder::UI)
+      y = 70
+      @player.inventory.slots.each do |item|
+        @font.draw("#{item.get_property('name')}", 510, y, ZOrder::UI)
+        y += 20
+      end
     end
 
     def update
