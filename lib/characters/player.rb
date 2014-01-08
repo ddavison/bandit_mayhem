@@ -6,6 +6,7 @@ module BanditMayhem
   module Characters
     class Player < Character
       def initialize(add_stats)
+
         stats = {
           name: 'Player',
           health: 200,

@@ -1,21 +1,29 @@
 require 'colorize'
-require './lib/game_window'
+require 'gosu'
 require './lib/characters/player'
 require './lib/commands'
 require './lib/campaign'
 
 module BanditMayhem
-  class Game
+  module ZOrder
+    Background, Player, UI = *0..2
+  end
+
+  class Game < Gosu::Window
     attr_accessor :player, :quit, :cmds
 
     def initialize
+      # show the window.
+      super 1024, 768, false
+      self.caption = 'Bandit Mayhem'
+      @background_image = Gosu::Image.new(self, './lib/media/bg.bmp', true)
+
       @cmds = []
       @campaign = BanditMayhem::Campaign.new
       @player = BanditMayhem::Characters::Player.new({name: 'Nigel'})
       @command_proc = BanditMayhem::Commands.new(self)
-      @window = BanditMayhem::GameWindow.new
 
-      # give the player 10 potions to start with.
+      # give the player some potions to start with.
       @player.give([
         BanditMayhem::Items::HealthPotion.new,
         BanditMayhem::Items::HealthPotion.new,
@@ -24,11 +32,9 @@ module BanditMayhem
 
       @quit = false
 
-      Game.cls
-      puts "\t\tWelcome to BANDIT MAYHEM, #{@player.get_av('name')}\n\n".yellow
-
-      # show the window.
-      @window.show
+      #Game.cls
+      #puts "\t\tWelcome to BANDIT MAYHEM, #{@player.get_av('name')}\n\n".yellow
+      @font = Gosu::Font.new(self, Gosu::default_font_name, 20)
     end
 
     # This is the main game loop.
@@ -41,26 +47,33 @@ module BanditMayhem
       system 'clear' unless system 'cls'
     end
 
+    def draw
+      @background_image.draw(0, 0, ZOrder::Background)
+
+      @font.draw("Health: #{@player.get_av('health')}", 500, 10, ZOrder::UI, 1.0, 1.0, 0xffff0000)
+      @font.draw("Gold: #{@player.get_av('gold')}", 500, 30, ZOrder::UI, 1.0, 1.0, 0xffffff00)
+    end
+
     def update
 
       # puts "\n------ DISPLAY ------"
       # show health
-      puts "\n__Health__"
-      puts @player.get_av('health').to_s.red
-      puts "\n__Gold__"
-      puts @player.get_av('gold').to_s.yellow
-
-      if @player.weapon.nil?
-        puts "You are currently unarmed with [#{@player.get_av('str')}] str.".green
-      else
-        puts "You currently have a [#{@player.weapon.get_property('name')}] equipped.".green
-      end
+      #puts "\n__Health__"
+      #puts @player.get_av('health').to_s.red
+      #puts "\n__Gold__"
+      #puts @player.get_av('gold').to_s.yellow
+      #
+      #if @player.weapon.nil?
+      #  puts "You are currently unarmed with [#{@player.get_av('str')}] str.".green
+      #else
+      #  puts "You currently have a [#{@player.weapon.get_property('name')}] equipped.".green
+      #end
 
       
-      puts 'Enter a command (type /help for commands) : '
-      STDOUT.flush
-      cmd = gets.chomp
-      execute(cmd)
+      #puts 'Enter a command (type /help for commands) : '
+      #STDOUT.flush
+      #cmd = gets.chomp
+      #execute(cmd)
     end
 
     # this subroutine will decide what to do with cmd
@@ -169,10 +182,12 @@ end
 
 if __FILE__ == $0 
   game = BanditMayhem::Game.new
+  game.show
 
   while true
     break if game.quit
-    game.main # loop
+    #game.main # loop
   end
+
   puts "thanks for playing bandit mayhem!".yellow
 end

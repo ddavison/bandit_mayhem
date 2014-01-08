@@ -1,3 +1,4 @@
 /Gemfile.lock
 .idea/
 bandit_mayhem.iml
+out/
