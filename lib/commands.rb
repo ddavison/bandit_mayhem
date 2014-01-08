@@ -7,15 +7,15 @@ require './lib/weapons/sword'
 module BanditMayhem
   class Commands
     DESCRIPTIONS = {
-      "/quit" => "Quit out of the game",
-      "/history" => "Show the history of commands youve used",
-      # "/get_av (av)" => "Get an attribute value",
-      # "/set_av (av)" => "Set an attribute value",
-      "/use (item_id_or_name)" => "Use an item",
-      "/inv" => "Shows your inventory",
-      "/help" => "Shows this menu",
-      "/stats" => "List the stats of your character",
-      "/test_fight [EnemyClass]" => "Fight an enemy. Defaults to a Bandit"
+      '/quit' => 'Quit out of the game',
+      '/history' => 'Show the history of commands youve used',
+      # '/get_av (av)' => 'Get an attribute value',
+      # '/set_av (av)' => 'Set an attribute value',
+      '/use (item_id_or_name)' => 'Use an item',
+      '/inv' => 'Shows your inventory',
+      '/help' => 'Shows this menu',
+      '/stats' => 'List the stats of your character',
+      '/test_fight [EnemyClass]' => 'Fight an enemy. Defaults to a Bandit'
     }
 
     def initialize(game_obj)

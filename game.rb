@@ -1,4 +1,5 @@
 require 'colorize'
+require './lib/game_window'
 require './lib/characters/player'
 require './lib/commands'
 require './lib/campaign'
@@ -10,8 +11,9 @@ module BanditMayhem
     def initialize
       @cmds = []
       @campaign = BanditMayhem::Campaign.new
-      @player = BanditMayhem::Characters::Player.new({name: "Nigel"})
+      @player = BanditMayhem::Characters::Player.new({name: 'Nigel'})
       @command_proc = BanditMayhem::Commands.new(self)
+      @window = BanditMayhem::GameWindow.new
 
       # give the player 10 potions to start with.
       @player.give([
@@ -24,6 +26,9 @@ module BanditMayhem
 
       Game.cls
       puts "\t\tWelcome to BANDIT MAYHEM, #{@player.get_av('name')}\n\n".yellow
+
+      # show the window.
+      @window.show
     end
 
     # This is the main game loop.
@@ -33,7 +38,7 @@ module BanditMayhem
     end
 
     def self.cls
-      system "clear" unless system "cls"
+      system 'clear' unless system 'cls'
     end
 
     def update
@@ -52,7 +57,7 @@ module BanditMayhem
       end
 
       
-      puts "Enter a command (type /help for commands) : "
+      puts 'Enter a command (type /help for commands) : '
       STDOUT.flush
       cmd = gets.chomp
       execute(cmd)
@@ -74,7 +79,7 @@ module BanditMayhem
       end
     end
 
-    # ==== MAIN BATTLE FUNC === #
+    # ==== MAIN BATTLE FUN`C === #
     def battle(enemy)
       player.set_av('attacks', 0)
       enemy.set_av('attacks', 0)
