@@ -1,7 +1,7 @@
 bandit-mayhem
 =============
 
-**Hey Nigel!
+**Hey Nigel!**
 
 ## About
 bandit-mayhem is a text-based game I am playing with in Ruby.
