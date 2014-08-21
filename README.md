@@ -27,4 +27,6 @@ $ ruby game.rb
 ## How to play
 Type `/help` in the console if you are lost.
 
-Use `WASD` to move.  To move, type in the respective direction, `W - Up, S - Down, A - Left, D - Right` and press enter.
+Use `wasd` to move.  To move, type in the respective direction, `w - Up, s - Down, a - Left, d - Right` and press enter.
+
+You can also chain moves.  For example, typing: `w w w w d` and pressing `ENTER` will go up four spaces, and right, one.
