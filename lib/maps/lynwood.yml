@@ -1,0 +1,24 @@
+---
+# The Starting Town of Lynwood
+name: Lynwood
+width: 20
+height: 10
+type: town
+
+south: lynwood_plains
+
+poi:
+  -
+    type: market
+    x: 2
+    y: 3
+    inventory:
+      - HealthPotion
+      - HealthPotion
+      - LuckPotion
+  -
+    type: coinpurse
+    x: 6
+    y: 6
+    value: 70
+    consumable: true

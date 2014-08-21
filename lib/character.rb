@@ -1,17 +1,24 @@
 require './lib/inventory'
 require './lib/item'
+require './lib/map'
+require './lib/market'
+require './lib/characters/player'
 require 'colorize'
-require 'gosu'
 
 module BanditMayhem
   class Character
-    attr_accessor :inventory
-    attr_accessor :weapon
+    attr_accessor :inventory,
+                  :weapon,
+                  :location
 
     def initialize(stats)
-      @x = @y = @vel_x = @vel_y = @angle = 0.0
-      @inventory = BanditMayhem::Inventory.new
+      @location = {
+          map: nil,
+          x: -1,
+          y: -1
+      }
 
+      @inventory = BanditMayhem::Inventory.new
 
       @stats = {}
 
@@ -22,8 +29,8 @@ module BanditMayhem
     end
 
     # gets an attribute value
-    def get_av(stat)
-      puts "could not get unknown av ['#{stat}']".red if @stats[stat.to_sym].nil?
+    def get_av(stat, default=nil)
+      set_av(stat, default) if @stats[stat.to_sym].nil?
       @stats[stat.to_sym]
     end
 
@@ -33,7 +40,7 @@ module BanditMayhem
     end
 
     def give(item)
-      if item.respond_to?("each") 
+      if item.respond_to? 'each'
         item.each do |i|
           @inventory.add_item(i)
         end
@@ -70,7 +77,7 @@ module BanditMayhem
           @inventory.slots.delete(arg.to_i) # TODO: figure out why it's not deleting an item correctly.
         elsif arg.is_a? String
           puts "destroy_item!(#{arg}): not implemented.".red
-        end        
+        end
       end
     end
 
@@ -94,33 +101,44 @@ module BanditMayhem
     def equip!(weapon)
       if weapon.is_weapon?
         @weapon = weapon
-
-        # modify the stats.
-        new_str = @weapon.get_property('str').to_i + get_av('str')
-        set_av('str', new_str.to_i)
       else
-        puts "you tried to equip something that is not a weapon.".red
+        puts 'you tried to equip something that is not a weapon.'.red
       end
     end
 
     def loot(target)
-      if target.is_dead?
-        # gold = target_health * ((attacked+target_attacks) / defense)
-        gold = target.get_av('base_health') * get_av('attacks')
+      if target.is_a? BanditMayhem::Character
+        if target.is_dead?
+          # gold = target_health * ((attacked+target_attacks) / defense)
+          gold = target.get_av('base_health') * get_av('attacks')
 
-        set_av('gold',
-          get_av('gold') + gold
-        )
-        
-        puts "You got #{gold} Gold!".yellow
+          set_av('gold',
+            get_av('gold') + gold
+          )
+
+          puts "You got $#{gold}!".yellow
+        else
+          puts 'cannot loot something thats not dead'.red
+        end
       else
-        puts "cannot loot something thats not dead".red
+        case target['type']
+          when 'coinpurse'
+            set_av('gold',
+              get_av('gold') + target['value']
+            )
+          when 'weapon'
+            weapon = Object.const_get('BanditMayhem').const_get('Weapons').const_get(target['item']).new
+            give weapon
+          else
+            itm = Object.const_get('BanditMayhem').const_get('Items').const_get(target['item']).new
+            give itm
+        end
       end
     end
 
     def show_inventory
       inventory.slots.each do |item|
-        puts inventory.slots.index(item).to_s + ". " + item.get_property('name').green + " : " + item.get_property('description').green
+        puts inventory.slots.index(item).to_s + '. ' + item.get_property('name').green + ' : ' + item.get_property('description').green
       end
     end
 
@@ -128,36 +146,171 @@ module BanditMayhem
       get_av('health').to_i <= 0
     end
 
-    # dimensional funcs
-    def warp(x, y)
-      @x, @y = x, y
+    # used for map detection. If the player collides with a market, for example.
+    def interact_with(item)
+      if is_a? BanditMayhem::Characters::Player
+        case item['type']
+          when 'market'
+            market = BanditMayhem::Market.new item, self
+            while market.shopping
+              market.shop
+            end
+          when 'coinpurse'
+            puts 'you found a ' + 'coinpurse'.blue + ' with ' + item['value'].to_s.yellow + ' inside!'
+            loot(item)
+
+          when 'item', 'weapon'
+            puts 'you found a ' + item['item'].to_s.blue + '!'
+            loot(item)
+          when 'bandit'
+            enemy_to_fight = nil
+            if !item['name']
+              enemy_to_fight = BanditMayhem::Characters::Bandit.new
+            else
+              # do later
+            end
+            battle(enemy_to_fight)
+        end
+      end
     end
 
-    def turn_left
-      @angle -= 4.5
+    # move the character
+    def move(direction)
+      case direction
+        when 'up', 'w'
+          if @location[:y] == 1
+            if @location[:map].north
+              @location[:map] = BanditMayhem::Map.new(@location[:map].north)
+              @location[:y] = @location[:map].height - 2
+            else
+              puts "can't go north!".red
+            end
+          else
+            @location[:y] = @location[:y].to_i - 1
+          end
+        when 'down', 's'
+          if @location[:y] == @location[:map].height - 2
+            if @location[:map].south
+              @location[:map] = BanditMayhem::Map.new(@location[:map].south)
+              @location[:y] = 1
+            else
+              puts "can't go south!".red
+            end
+          else
+            @location[:y] = @location[:y].to_i + 1
+          end
+        when 'left', 'a'
+          if @location[:x] == 1
+            if @location[:map].east
+              @location[:map] = BanditMayhem::Map.new(@location[:map].east)
+              @location[:x] = @location[:map].width - 2
+            else
+              puts "can't go east!".red
+            end
+          else
+            @location[:x] = @location[:x].to_i - 1
+          end
+        when 'right', 'd'
+          if @location[:x] == @location[:map].width - 2
+            if @location[:map].west
+              @location[:map] = BanditMayhem::Map.new(@location[:map].west)
+              @location[:x] = @location[:map].width - 2
+            else
+              puts "can't go west!".red
+            end
+          else
+            @location[:x] = @location[:x].to_i + 1
+          end
+      end
     end
 
-    def turn_right
-      @angle += 4.5
+    # ==== MAIN BATTLE FUNC === #
+    def battle(enemy)
+      set_av('attacks', 0)
+      enemy.set_av('attacks', 0)
+
+      @in_battle = true
+      player = self
+
+      # player will always go first.
+      players_turn = true
+
+      Game.cls
+
+      puts "\t\t\t\tBATTLING: #{enemy.get_av('name')}".green
+      puts "\t\t" + enemy.get_av('avatar', '(no avatar)').to_s + "\n\n"
+
+      while @in_battle
+        puts 'Your health: ' + player.get_av('health').to_s.red
+        puts enemy.get_av('name') + '\'s health: ' + enemy.get_av('health').to_s.red
+        puts '------------------------'
+
+        if players_turn
+          puts 'Your turn...'.green
+          fight_menu(enemy)
+
+          player.loot(enemy) if enemy.is_dead?
+
+          players_turn = false
+        else
+          # for now, all the enemy will do, is attack.
+          puts "#{enemy.get_av('name')}'s turn...".red
+
+          attack(enemy, player)
+          players_turn = true
+        end
+      end
     end
 
-    def accelerate
-      @vel_x += Gosu::offset_x(@angle, 0.5)
-      @vel_y += Gosu::offset_y(@angle, 0.5)
+    def attack(src, dst)
+      sleep(1)
+      total_dmg = (BanditMayhem::Helpers.calculate_attack_damage(src) - BanditMayhem::Helpers.calculate_defense(dst))
+
+      dst.set_av('health',
+        dst.get_av('health') - total_dmg
+      )
+
+      puts "\n" + src.get_av('name').to_s.red + ' attacked ' + dst.get_av('name').to_s.blue + ' for ' + total_dmg.to_s.green + " dmg.\n-----------------"
+
+      src.set_av('attacks',
+        src.get_av('attacks', 0).to_i + 1
+      )
+
+      if dst.is_dead?
+        puts src.get_av('name').to_s.red + ' has slain ' + dst.get_av('name').to_s.blue
+        @in_battle = false
+      end
     end
 
-    def move
-      @x += @vel_x
-      @y += @vel_y
-      @x %= 640
-      @y %= 480
+    def fight_menu(enemy)
+      puts 'Fight options...'
+      puts '----------------'
+      puts '1. ' + 'Attack'.red
+      puts '2. ' + 'Run'.green
+      puts '3. ' + 'Use item'.blue
+      puts 'Enter an option:'
 
-      @vel_x *= 0.95
-      @vel_y *= 0.95
-    end
+      STDOUT.flush
+      cmd = gets.chomp
+      cmd = cmd.to_i
 
-    def draw
-      #@image.draw_rot(@x, @y, ZOrder::Player, @angle)
+      if cmd.eql? 1
+        # attack
+        attack(self, enemy)
+      elsif cmd.eql? 2
+        # run away
+        @in_battle = false
+        puts 'You ran away'.green
+        sleep(1)
+        Game.cls
+      elsif cmd.eql? 3
+        # show the inventory, then let them choose.
+        show_inventory
+        puts 'Enter an item to use:'
+        STDOUT.flush
+        item = gets.chomp
+        use_item(item.to_i)
+      end
     end
   end
 end
