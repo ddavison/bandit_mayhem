@@ -23,3 +23,8 @@ $ cd bandit-mayhem
 $ bundle install
 $ ruby game.rb
 ```
+
+## How to play
+Type `/help` in the console if you are lost.
+
+Use `WASD` to move.  To move, type in the respective direction, `W - Up, S - Down, A - Left, D - Right` and press enter.
