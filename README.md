@@ -12,7 +12,7 @@ You start out in a town called Lynwood that has been ravaged by Bandits.
 
 Traverse through plains, towns and other areas collecting money, weapons and items. With no real goal in mind, you're bound to get bored.
 
-![lynwood](http://i.imgur.com/JnUWGpV.png)]
+![lynwood](http://i.imgur.com/JnUWGpV.png)
 ![lynwood plains](http://i.imgur.com/gaiUiKf.png)
 
 ## How to Install
