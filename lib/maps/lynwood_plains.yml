@@ -17,7 +17,6 @@ poi:
     x: 10
     y: 8
     value: 15
-    consumable: true
   -
     type: weapon
     item: Sword

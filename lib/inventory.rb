@@ -10,8 +10,8 @@ module BanditMayhem
       @slots << item
     end
 
-    def remove_item(item_id)
-      @slots.delete(item_id)
+    def remove_item(item)
+      @slots.delete(item) if @slots.include? item
     end
   end
 end

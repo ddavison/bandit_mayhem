@@ -1,0 +1,25 @@
+{
+  "name": "BanditMayhemEditor",
+  "description": "The editor for the Bandit Mayhem game",
+  "author": "Daniel Davison (github.com/ddavison)",
+  "main": "Gruntfile.coffee",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ddavison/bandit-mayhem.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ddavison/bandit-mayhem/issues"
+  },
+  "homepage": "https://github.com/ddavison/bandit-mayhem",
+  "dependencies": {
+    "grunt": "*",
+    "grunt-cli": "*",
+    "grunt-exec": "*",
+    "grunt-contrib-jade": "*",
+    "grunt-contrib-coffee": "*",
+    "grunt-contrib-compass": "*",
+    "grunt-contrib-clean": "*",
+    "grunt-contrib-copy": "*"
+  },
+  "engine": "node >= 0.10"
+}

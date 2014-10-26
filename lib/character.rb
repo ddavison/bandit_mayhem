@@ -2,8 +2,11 @@ require './lib/inventory'
 require './lib/item'
 require './lib/map'
 require './lib/market'
+require './lib/helpers'
 require './lib/characters/player'
 require 'colorize'
+
+require './lib/items/traversing_ring'
 
 module BanditMayhem
   class Character
@@ -14,6 +17,7 @@ module BanditMayhem
     def initialize(stats)
       @location = {
           map: nil,
+          last: nil,
           x: -1,
           y: -1
       }
@@ -40,7 +44,7 @@ module BanditMayhem
     end
 
     def give(item)
-      if item.respond_to? 'each'
+      if item.respond_to? :each
         item.each do |i|
           @inventory.add_item(i)
         end
@@ -73,16 +77,22 @@ module BanditMayhem
 
     def destroy_item!(arg)
       if has_item?(arg)
-        if arg.is_a? Integer
-          @inventory.slots.delete(arg.to_i) # TODO: figure out why it's not deleting an item correctly.
-        elsif arg.is_a? String
-          puts "destroy_item!(#{arg}): not implemented.".red
-        end
+        @inventory.remove_item(arg)
       end
     end
 
     def has_item?(arg)
-      if arg.is_a? Integer
+      if arg.is_a? Class
+        if @inventory.slots.respond_to? :each
+          @inventory.slots.each do |slot|
+            if slot.is_a? arg
+              return true
+            end
+          end
+        else
+          false
+        end
+      elsif arg.is_a? Integer
         return true if @inventory.slots[arg.to_i]
       elsif arg.is_a? String
         @inventory.slots.each do |item|
@@ -107,6 +117,9 @@ module BanditMayhem
     end
 
     def loot(target)
+      Dir['./lib/items/*'].each { |file| require file }
+      Dir['./lib/weapons/*'].each { |file| require file }
+
       if target.is_a? BanditMayhem::Character
         if target.is_dead?
           # gold = target_health * ((attacked+target_attacks) / defense)
@@ -116,7 +129,7 @@ module BanditMayhem
             get_av('gold') + gold
           )
 
-          puts "You got $#{gold}!".yellow
+          puts 'You got $' + "#{gold}!".yellow
         else
           puts 'cannot loot something thats not dead'.red
         end
@@ -149,33 +162,72 @@ module BanditMayhem
     # used for map detection. If the player collides with a market, for example.
     def interact_with(item)
       if is_a? BanditMayhem::Characters::Player
+        if item[:map] # passing in the location object
+          # interacting with a point on the map
+          item = @location[:map].get_entity_at item
+        end
+        return if item.nil?
         case item['type']
           when 'market'
             market = BanditMayhem::Market.new item, self
             while market.shopping
               market.shop
             end
+
           when 'coinpurse'
-            puts 'you found a ' + 'coinpurse'.blue + ' with ' + item['value'].to_s.yellow + ' inside!'
+            puts 'you found a ' + 'coinpurse'.upcase.blue + ' with ' + item['value'].to_s.yellow + ' inside!'
             loot(item)
 
+          when 'door', 'cave'
+            area = item['destination']['location']
+            @location[:map] = BanditMayhem::Map.new(area)
+            @location[:x] = item['destination']['x']
+            @location[:y] = item['destination']['y']
+
           when 'item', 'weapon'
-            puts 'you found a ' + item['item'].to_s.blue + '!'
+            puts 'you found a ' + item['item'].to_s.upcase.blue + '!'
             loot(item)
+
           when 'bandit'
             enemy_to_fight = nil
             if !item['name']
+              require './lib/characters/bandit'
               enemy_to_fight = BanditMayhem::Characters::Bandit.new
             else
-              # do later
+              # do later (this is for greater foes)
             end
             battle(enemy_to_fight)
+        end
+      end
+      case item['type']
+        when 'wall', 'tree'
+          if has_item? BanditMayhem::Items::TraversingRing
+            @location[:map].remove_entity(@location)
+          else
+            warp(@location[:last])
+          end
+      end
+
+      if is_a? BanditMayhem::Characters::Player
+        @location[:map].render_map(self)
+      end
+    end
+
+    def warp(*args)
+      if args[0].is_a? Array
+        @location[:x], @location[:y] = args[0][0],args[0][1]
+      else
+        if args[0].is_a?(Integer) && args[1].is_a?(Integer)
+          # warp to x and y
+          @location[:x], @location[:y] = args[0].to_i, args[1].to_i
         end
       end
     end
 
     # move the character
     def move(direction)
+      Game.cls
+      @location[:last] = [@location[:x], @location[:y]]
       case direction
         when 'up', 'w'
           if @location[:y] == 1
@@ -201,17 +253,6 @@ module BanditMayhem
           end
         when 'left', 'a'
           if @location[:x] == 1
-            if @location[:map].east
-              @location[:map] = BanditMayhem::Map.new(@location[:map].east)
-              @location[:x] = @location[:map].width - 2
-            else
-              puts "can't go east!".red
-            end
-          else
-            @location[:x] = @location[:x].to_i - 1
-          end
-        when 'right', 'd'
-          if @location[:x] == @location[:map].width - 2
             if @location[:map].west
               @location[:map] = BanditMayhem::Map.new(@location[:map].west)
               @location[:x] = @location[:map].width - 2
@@ -219,13 +260,29 @@ module BanditMayhem
               puts "can't go west!".red
             end
           else
+            @location[:x] = @location[:x].to_i - 1
+          end
+        when 'right', 'd'
+          if @location[:x] == @location[:map].width - 2
+            if @location[:map].east
+              @location[:map] = BanditMayhem::Map.new(@location[:map].east)
+              @location[:x] = @location[:map].width - 2
+            else
+              puts "can't go east!".red
+            end
+          else
             @location[:x] = @location[:x].to_i + 1
           end
       end
+      interact_with @location
     end
 
     # ==== MAIN BATTLE FUNC === #
     def battle(enemy)
+      if BanditMayhem::Settings.new.get('music', true)
+        Game.media_player.play_song(File.expand_path('./lib/media/battle.mp3'))
+      end
+
       set_av('attacks', 0)
       enemy.set_av('attacks', 0)
 
@@ -250,8 +307,8 @@ module BanditMayhem
           fight_menu(enemy)
 
           player.loot(enemy) if enemy.is_dead?
-
           players_turn = false
+          @location[:map].remove_entity(@location)
         else
           # for now, all the enemy will do, is attack.
           puts "#{enemy.get_av('name')}'s turn...".red
@@ -259,6 +316,10 @@ module BanditMayhem
           attack(enemy, player)
           players_turn = true
         end
+      end
+
+      if BanditMayhem::Settings.new.get('music', true)
+        Game.media_player.stop
       end
     end
 
@@ -298,11 +359,17 @@ module BanditMayhem
         # attack
         attack(self, enemy)
       elsif cmd.eql? 2
-        # run away
-        @in_battle = false
-        puts 'You ran away'.green
-        sleep(1)
-        Game.cls
+        if BanditMayhem::Helpers.shuffle_percent(get_av('luck'))
+          # run away
+          @in_battle = false
+          puts 'You ran away'.green
+          sleep(1)
+          Game.cls
+        else
+          puts 'The bandit grabs you by your gear and pulls you back into the fight.'.red
+          sleep(1)
+          Game.cls
+        end
       elsif cmd.eql? 3
         # show the inventory, then let them choose.
         show_inventory

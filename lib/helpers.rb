@@ -1,5 +1,11 @@
 module BanditMayhem
   class Helpers
+
+    def self.shuffle_percent(percent)
+      return true if rand(100) <= percent
+      return false
+    end
+
     def self.shuffle(num)
 
     end

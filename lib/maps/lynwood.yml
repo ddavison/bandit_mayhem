@@ -14,11 +14,17 @@ poi:
     y: 3
     inventory:
       - HealthPotion
-      - HealthPotion
       - LuckPotion
   -
     type: coinpurse
     x: 6
     y: 6
     value: 70
-    consumable: true
+  -
+    type: door
+    x: 8
+    y: 4
+    destination:
+      location: lynwood_armory
+      x: 2
+      y: 1

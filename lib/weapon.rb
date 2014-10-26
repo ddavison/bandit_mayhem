@@ -1,4 +1,5 @@
 require './lib/item'
+require './lib/weapon'
 
 module BanditMayhem
   class Weapon < Item
@@ -13,6 +14,11 @@ module BanditMayhem
       props.merge!(new_props)
 
       super(props)
+    end
+
+    # return an object based on the moniker
+    def self.by_name(name)
+      Object.const_get('BanditMayhem').const_get('Weapons').const_get(name).new
     end
   end
 end
