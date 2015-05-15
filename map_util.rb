@@ -14,4 +14,4 @@ map = BanditMayhem::Map.new(map_to_render)
 
 map_data = map.get_map(player)
 
-puts map_data
+File.open('map', map_data)

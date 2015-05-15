@@ -9,7 +9,7 @@ module.exports = (grunt) ->
     jsOutput: "<%= outputDir %>/js"
 
     clean:
-        src: ["<%= outputDir %>/src"]
+        src: ["<%= outputDir %>", ".sass-cache"]
 
     compass:
       development:
@@ -57,6 +57,10 @@ module.exports = (grunt) ->
         expand: true,
         cwd: 'thirdparty/',
         src: '**/*',
+        dest: "<%= outputDir %>"
+      package:
+        expand: true,
+        src: 'package.json',
         dest: "<%= outputDir %>"
 
     exec:

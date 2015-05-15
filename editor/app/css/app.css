@@ -1,4 +1,27 @@
-/* line 2, ../../src/scss/app.scss */
-html body {
+/* line 1, ../../src/scss/app.scss */
+html {
   font-family: Consolas, Tahoma, Geneva, sans-serif;
+}
+/* line 3, ../../src/scss/app.scss */
+html body {
+  cursor: pointer !important;
+}
+/* line 5, ../../src/scss/app.scss */
+html body #main-container {
+  height: 100%;
+  width: 100%;
+}
+/* line 9, ../../src/scss/app.scss */
+html body #main-container #content-area {
+  height: 80%;
+}
+/* line 13, ../../src/scss/app.scss */
+html body #main-container #tool-panel textarea#console-log {
+  border: none;
+  border-top: 1px solid #424242;
+  background-color: inherit;
+  width: 100%;
+  height: 400px;
+  font-family: Consolas, monospace;
+  font-size: 11px;
 }
