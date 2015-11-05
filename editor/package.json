@@ -31,7 +31,8 @@
     "grunt-contrib-compass": "*",
     "grunt-contrib-clean": "*",
     "grunt-contrib-copy": "*",
-    "js-yaml": "*"
+    "js-yaml": "*",
+    "electron-prebuilt": "*"
   },
   "engine": "node >= 0.10"
 }

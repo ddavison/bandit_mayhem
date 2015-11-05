@@ -119,7 +119,10 @@ $(document).ready ->
       
       for y in [0..height]
         for x in [0..width]
-          html += "<span class='map-marker' title='#{[y][x]['properties']}'>#{content[y][x]}</span>"
+          console.log y
+          console.log y[x]
+          console.log y[x].properties
+          html += "<span class='map-marker' title='#{y[x]['properties']}'>#{content[y][x]}</span>"
         html += "<br />"
       html += "</div>"
       @setContent(html)

@@ -1,0 +1,28 @@
+doctype html
+html
+  head
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Bandit Mayhem Editor
+    link(type="text/css", rel="stylesheet", href="css/app.css")
+    link(type="text/css", rel="stylesheet", href="css/bootstrap.min.css")
+    script(type="text/javascript", src="js/jquery.js")
+    script(type="text/javascript", src="js/bootstrap.min.js")
+    script(type="text/javascript", src="js/app.js")
+  body
+    #main-container.container
+      #topbar.navbar.navbar-default
+        .container-fluid
+          .navbar-header
+            button.navbar-toggle.collapse(type='button', data-toggle='collapse', data-target='#navbar-cont')
+              span.sr-only Toggle navigation
+              span.icon-bar
+              span.icon-bar
+              span.icon-bar
+            a.navbar-brand(href="index.html") Bandit Mayhem Editor
+          #navbar-cont.collapse.navbar-collapse
+            ul.nav.navbar-nav
+
+      #content-area.container.col-lg-8
+        block content
+      #tool-panel.container.pull-right.well.well-sm.col-md-4
+        include _tool-panel

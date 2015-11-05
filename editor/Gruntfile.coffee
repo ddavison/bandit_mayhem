@@ -65,7 +65,7 @@ module.exports = (grunt) ->
 
     exec:
       run:
-        command: "cd app && node-webkit ." # run the actual app
+        command: "cd app && ../node_modules/.bin/electron ./index.html" # run the actual app
   )
 
   grunt.loadNpmTasks('grunt-contrib-clean')
