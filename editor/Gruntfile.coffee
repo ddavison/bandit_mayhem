@@ -9,7 +9,7 @@ module.exports = (grunt) ->
     jsOutput: "<%= outputDir %>/js"
 
     clean:
-        src: ["<%= outputDir %>", ".sass-cache"]
+      src: ["<%= outputDir %>", ".sass-cache"]
 
     compass:
       development:
@@ -51,6 +51,12 @@ module.exports = (grunt) ->
         src: ["**/*.coffee"]
         dest: "<%= jsOutput %>"
         ext: ".js"
+      app:
+        expand: true
+        cwd: "<%= srcDir %>"
+        src: ["main.coffee"]
+        dest: "<%= outputDir %>"
+        ext: '.js'
 
     copy:
       main:
@@ -65,7 +71,7 @@ module.exports = (grunt) ->
 
     exec:
       run:
-        command: "cd app && ../node_modules/.bin/electron ./index.html" # run the actual app
+        command: "cd app && ../node_modules/.bin/electron ." # run the actual app
   )
 
   grunt.loadNpmTasks('grunt-contrib-clean')
@@ -75,5 +81,5 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks('grunt-contrib-copy')
   grunt.loadNpmTasks('grunt-exec')
 
-  grunt.registerTask('default',    ['clean', 'copy', 'jade:development', 'coffee:development', 'compass:development', 'exec:run'])
-  grunt.registerTask('release',    ['clean', 'copy', 'jade:production',  'coffee:production',  'compass:production'])
+  grunt.registerTask('default',    ['clean', 'copy', 'jade:development', 'coffee:development', 'compass:development', 'coffee:app', 'exec:run'])
+  grunt.registerTask('release',    ['clean', 'copy', 'jade:production',  'coffee:production', 'coffee:app',  'compass:production'])

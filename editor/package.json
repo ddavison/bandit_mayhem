@@ -2,17 +2,8 @@
   "name": "BanditMayhemEditor",
   "description": "The editor for the Bandit Mayhem game",
   "author": "Daniel Davison (github.com/ddavison)",
-  "main": "index.html",
-  "window": {
-    "title": "Official Bandit Mayhem Editor",
-    "toolbar": true,
-    "frame": true,
-    "width": 1200,
-    "height": 700,
-    "position": "mouse",
-    "min_width": 1200,
-    "min_height": 700
-  },
+  "main": "main.js",
+  "version": "1.0.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/ddavison/bandit-mayhem.git"

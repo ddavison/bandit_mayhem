@@ -131,7 +131,10 @@
         width = Map.content.width - 1;
         for (y = i = 0, ref = height; 0 <= ref ? i <= ref : i >= ref; y = 0 <= ref ? ++i : --i) {
           for (x = j = 0, ref1 = width; 0 <= ref1 ? j <= ref1 : j >= ref1; x = 0 <= ref1 ? ++j : --j) {
-            html += "<span class='map-marker' title='" + [y][x]['properties'] + "'>" + content[y][x] + "</span>";
+            console.log(y);
+            console.log(y[x]);
+            console.log(y[x].properties);
+            html += "<span class='map-marker' title='" + y[x]['properties'] + "'>" + content[y][x] + "</span>";
           }
           html += "<br />";
         }
