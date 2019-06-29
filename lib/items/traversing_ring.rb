@@ -7,7 +7,7 @@ module BanditMayhem
         super({
           name: 'Traversing Ring',
           description: 'Allows you to traverse through walls.',
-          sell_value: 20000
+          sell_value: 20_000
         })
       end
 

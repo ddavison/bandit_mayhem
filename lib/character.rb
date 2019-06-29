@@ -76,18 +76,14 @@ module BanditMayhem
     end
 
     def destroy_item!(arg)
-      if has_item?(arg)
-        @inventory.remove_item(arg)
-      end
+      @inventory.remove_item(arg) if has_item?(arg)
     end
 
     def has_item?(arg)
       if arg.is_a? Class
         if @inventory.slots.respond_to? :each
           @inventory.slots.each do |slot|
-            if slot.is_a? arg
-              return true
-            end
+            return true if slot.is_a? arg
           end
         else
           false
@@ -100,7 +96,7 @@ module BanditMayhem
           return true if item.name.eql? arg
         end
       end
-      return false
+      false
     end
 
     def merge_stats(new_stats)

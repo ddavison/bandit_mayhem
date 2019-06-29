@@ -19,9 +19,12 @@ Traverse through plains, towns and other areas collecting money, weapons and ite
 
 ## How to Install
 
+### OSX
 ```bash
 $ git clone https://github.com/ddavison/bandit-mayhem.git
 $ cd bandit-mayhem
+$ brew install portaudio
+$ brew install mpg123
 $ bundle install
 $ ruby game.rb
 ```
