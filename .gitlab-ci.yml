@@ -1,0 +1,14 @@
+---
+
+stage: sanity
+stage: test
+stage: package
+
+
+map-validation:
+  stage: sanity
+  script: bundle exec rake validate_maps
+
+specs:
+  stage: test
+  script: bundle exec rspec
