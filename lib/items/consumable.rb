@@ -1,9 +1,8 @@
 require 'symbolized'
-require 'item'
 
 module BanditMayhem
   module Items
-    class Consumable < Item
+    class Consumable < BanditMayhem::Item
       def initialize(props)
         super(props)
       end

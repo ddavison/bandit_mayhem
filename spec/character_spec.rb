@@ -1,5 +1,4 @@
 require 'character'
-require 'items/health_potion'
 
 describe BanditMayhem::Character do
   subject { BanditMayhem::Character.new({health: 100, max_health: 100}) }
@@ -33,17 +32,6 @@ describe BanditMayhem::Character do
 
     subject.set_av('health', -47)
     expect(subject).to be_dead
-  end
-
-  context 'inventory' do
-    it 'by default has no items' do
-      expect(subject.inventory.all_items).to eq([])
-    end
-
-    it '#give gives an item' do
-      subject.give(BanditMayhem::Items::HealthPotion)
-      expect(subject.inventory).to have_item(BanditMayhem::Items::HealthPotion)
-    end
   end
 
   context 'loot' do

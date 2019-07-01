@@ -34,7 +34,7 @@ module BanditMayhem
         level: 1,
       })
 
-      @inventory = BanditMayhem::Inventory.new
+      @inventory = []
       @actor_values = {}.to_symbolized_hash
 
       stats.map { |k, v| set_av(k, v) }
@@ -50,16 +50,6 @@ module BanditMayhem
     def set_av(stat, value)
       @actor_values["base_#{stat}"] = value unless @actor_values["base_#{stat}"]
       @actor_values[stat] = value
-    end
-
-    def give(item)
-      if item.respond_to? :each
-        item.each do |i|
-          @inventory.add_item(i)
-        end
-      else
-        @inventory.add_item(item)
-      end
     end
 
     def use_item(arg)
@@ -142,10 +132,10 @@ module BanditMayhem
             )
           when 'weapon'
             weapon = Object.const_get('BanditMayhem').const_get('Weapons').const_get(target['item']).new
-            give weapon
+            @inventory.add_item(weapon)
           else
             itm = Object.const_get('BanditMayhem').const_get('Items').const_get(target['item']).new
-            give itm
+            @inventory.add_item(itm)
         end
       end
     end

@@ -1,15 +1,11 @@
 module BanditMayhem
   class Inventory
-    def initialize
-      @slots = []
+    def initialize(items=[])
+      @slots = items
     end
 
     def add_item(item)
-      @slots << item if item.is_a? Item
-    end
-
-    def all_items
-      @slots
+      @slots << item
     end
 
     def has_item?(item)
