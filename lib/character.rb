@@ -52,30 +52,13 @@ module BanditMayhem
       @actor_values[stat] = value
     end
 
-    def use_item(arg)
-      if @items.include? arg
-        if arg.is_a? Integer # use the id of the item.
-          @items[arg.to_i].use(self)
-        # elsif arg.is_a? String # use the moniker / name of the item.
-        #   @inventory.slots.each do |item|
-        #     if item.name.eql? arg or item.moniker.eql? arg
-        #       @inventory.slots[item].use(self)
-        #       destroy_item!(item)
-        #     end
-        #   end
-        end
-      else
-        puts "you do not have an item currently with the id/name [#{arg}]".red
-      end
-    end
-
     def merge_avs(new_stats)
       @actor_values&.merge!(new_stats) if new_stats
     end
 
     # equip a Weapon object.
     def equip!(weapon)
-      if weapon.is_weapon?
+      if weapon.is_a? Weapon
         @weapon = weapon
       else
         puts 'you tried to equip something that is not a weapon.'.red

@@ -68,8 +68,6 @@ module BanditMayhem
         }
 
         super(add_stats.merge!(stats))
-
-        equip!(BanditMayhem::Weapons::Stick.new)
       end
     end
   end

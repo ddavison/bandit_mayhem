@@ -1,4 +1,5 @@
 require 'characters/player'
+require 'weapons/stick'
 
 describe BanditMayhem::Characters::Player do
   subject { BanditMayhem::Characters::Player.new({}) }

@@ -2,15 +2,12 @@ require 'item'
 
 module BanditMayhem
   class Weapon < Item
-    def initialize(props)
+    def initialize(add_props)
       # base stats
-      new_props = {
-        sell_value: 40,
+      props = { sell_value: 40,
         buy_value: 80,
         weapon: true
-      }
-
-      props.merge!(new_props)
+      }.merge(add_props)
 
       super(props)
     end

@@ -5,6 +5,7 @@ GEM
     byebug (9.1.0)
     colorize (0.7.3)
     diff-lcs (1.3)
+    rake (12.3.2)
     rspec (3.8.0)
       rspec-core (~> 3.8.0)
       rspec-expectations (~> 3.8.0)
@@ -27,6 +28,7 @@ DEPENDENCIES
   audite
   byebug
   colorize
+  rake
   rspec
   symbolized
 

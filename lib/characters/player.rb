@@ -7,13 +7,9 @@ module BanditMayhem
       def initialize(add_stats)
         stats = {
           name:   'Nigel',
-          level:  1
-        }
+        }.merge(add_stats)
 
-        stats.merge!(add_stats) if add_stats
         super(stats)
-
-        equip!(BanditMayhem::Weapons::Stick.new)
 
         # give([
         #   BanditMayhem::Items::HealthPotion.new,

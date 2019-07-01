@@ -2,16 +2,13 @@ require 'symbolized'
 
 module BanditMayhem
   class Item
+    attr_accessor :properties
 
     def initialize(props={})
       @properties = props.to_symbolized_hash
     end
 
     # each item needs to implement "def use". there is no abstract in ruby.
-    def is_weapon?
-      !!@properties[:weapon]
-    end
-
     def use
       yield
     end
