@@ -1,8 +1,9 @@
 ---
 
-stage: sanity
-stage: test
-stage: package
+stages: 
+- sanity
+- test
+- package
 
 
 map-validation:
