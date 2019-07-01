@@ -23,6 +23,11 @@ module BanditMayhem
   end
 
   class Map
+
+    def to_s
+      @map_info['name']
+    end
+
     attr_reader :map_info,
                 :width,
                 :height,

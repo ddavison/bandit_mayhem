@@ -12,6 +12,10 @@ module BanditMayhem
       !!@properties[:weapon]
     end
 
+    def use
+      yield
+    end
+
     # return an object based on the moniker
     def self.by_name(name)
       Object.const_get('BanditMayhem').const_get('Items').const_get(name).new

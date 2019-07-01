@@ -1,6 +1,4 @@
 require 'character'
-require 'items/health_potion'
-require 'items/luck_potion'
 require 'weapons/stick'
 
 module BanditMayhem
@@ -9,7 +7,6 @@ module BanditMayhem
       def initialize(add_stats)
         stats = {
           name:   'Nigel',
-          luck:   25,
           level:  1
         }
 
@@ -29,7 +26,7 @@ module BanditMayhem
             map: BanditMayhem::Map.new('lynwood'),
             x: 3,
             y: 3
-        }
+        }.to_symbolized_hash
       end
     end
   end

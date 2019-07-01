@@ -1,4 +1,3 @@
-require 'inventory'
 require 'item'
 require 'map'
 require 'market'
@@ -11,13 +10,13 @@ require 'items/traversing_ring'
 
 module BanditMayhem
   class Character
-    attr_accessor :inventory,
-                  :weapon,
-                  :location
+    attr_accessor :weapon,
+                  :location,
+                  :items
 
     attr_reader :actor_values
 
-    def initialize(stats)
+    def initialize(add_stats)
       @location = {
           map: nil,
           last: nil,
@@ -25,16 +24,17 @@ module BanditMayhem
           y: -1
       }
 
-      stats.merge!({
+
+      stats = {
         name: 'Character',
         health: 100,
         max_health: 100,
         str: 10,
         def: 0,
         level: 1,
-      })
+      }.merge(add_stats)
 
-      @inventory = []
+      @items = []
       @actor_values = {}.to_symbolized_hash
 
       stats.map { |k, v| set_av(k, v) }
@@ -53,45 +53,20 @@ module BanditMayhem
     end
 
     def use_item(arg)
-      if has_item?(arg)
+      if @items.include? arg
         if arg.is_a? Integer # use the id of the item.
-          @inventory.slots[arg.to_i].use(self)
-          destroy_item!(arg)
-        elsif arg.is_a? String # use the moniker / name of the item.
-          @inventory.slots.each do |item|
-            if item.name.eql? arg or item.moniker.eql? arg
-              @inventory.slots[item].use(self)
-              destroy_item!(item)
-            end
-          end
+          @items[arg.to_i].use(self)
+        # elsif arg.is_a? String # use the moniker / name of the item.
+        #   @inventory.slots.each do |item|
+        #     if item.name.eql? arg or item.moniker.eql? arg
+        #       @inventory.slots[item].use(self)
+        #       destroy_item!(item)
+        #     end
+        #   end
         end
       else
         puts "you do not have an item currently with the id/name [#{arg}]".red
       end
-    end
-
-    def destroy_item!(arg)
-      @inventory.remove_item(arg) if has_item?(arg)
-    end
-
-    def has_item?(arg)
-      if arg.is_a? Class
-        if @inventory.slots.respond_to? :each
-          @inventory.slots.each do |slot|
-            return true if slot.is_a? arg
-          end
-        else
-          false
-        end
-      elsif arg.is_a? Integer
-        return true if @inventory.slots[arg.to_i]
-      elsif arg.is_a? String
-        @inventory.slots.each do |item|
-          return true if item.moniker.eql? arg
-          return true if item.name.eql? arg
-        end
-      end
-      false
     end
 
     def merge_avs(new_stats)
@@ -108,22 +83,24 @@ module BanditMayhem
     end
 
     def loot(target)
-      Dir['./lib/items/*'].each { |file| require file }
-      Dir['./lib/weapons/*'].each { |file| require file }
-
       if target.is_a? BanditMayhem::Character
+
+        everything_looted = {}.to_symbolized_hash
+
         if target.dead?
-          # gold = target_health * ((attacked+target_attacks) / defense)
-          gold = target.get_av('base_health') * get_av('attacks')
+          gold = target.get_av('level') * 15 + (get_av('attacks', 0) * 3)
 
-          set_av('gold',
-            get_av('gold') + gold
-          )
-
+          everything_looted[:gold] = gold
           puts 'You got $' + "#{gold}!".yellow
         else
           puts 'cannot loot something thats not dead'.red
         end
+
+
+        merge_avs(everything_looted)
+        target.actor_values.delete_if { |k, v| everything_looted.key?(k) }
+
+        everything_looted
       else
         case target['type']
           when 'coinpurse'
@@ -132,10 +109,10 @@ module BanditMayhem
             )
           when 'weapon'
             weapon = Object.const_get('BanditMayhem').const_get('Weapons').const_get(target['item']).new
-            @inventory.add_item(weapon)
+            @items << weapon
           else
             itm = Object.const_get('BanditMayhem').const_get('Items').const_get(target['item']).new
-            @inventory.add_item(itm)
+            items << itm
         end
       end
     end

@@ -19,7 +19,7 @@ module BanditMayhem
           # '/get_av (av)' => 'Get an attribute value',
           # '/set_av (av)' => 'Set an attribute value',
           '/use (item_id_or_name)' => 'Use an item',
-          '/inv' => 'Shows your inventory',
+          '/inv' => 'Shows your items',
           '/help' => 'Shows this menu',
           '/stats' => 'List the stats of your character'
         }
@@ -71,10 +71,10 @@ module BanditMayhem
         @game.player.use_item(args.first.to_i)
       end
 
-      # show the player's current inventory.
+      # show the player's current items.
       def inv(args)
-        @game.player.inventory.slots.each do |item|
-          puts @game.player.inventory.slots.index(item).to_s + '. ' + item.get_property('name').green + ' : ' + item.get_property('description').green
+        @game.player.items.each do |item|
+          puts @game.player.items.index(item).to_s + '. ' + item.properties[:name].green + ' : ' + item.properties[:description].green
         end
       end
 

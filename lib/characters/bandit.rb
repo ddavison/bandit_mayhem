@@ -1,11 +1,11 @@
-require './lib/character'
-require './lib/weapons/stick'
+require 'character'
+require 'weapons/stick'
 
 module BanditMayhem
   module Characters
     class Bandit < Character
-      def initialize
-        stats = {
+      def initialize(stats={})
+        add_stats = {
           name: 'Bandit',
           avatar: <<-END
           `'#'
@@ -67,7 +67,7 @@ module BanditMayhem
           END
         }
 
-        super(stats)
+        super(add_stats.merge!(stats))
 
         equip!(BanditMayhem::Weapons::Stick.new)
       end
