@@ -1,24 +1,25 @@
 require 'yaml'
+require 'colorize'
 
 module BanditMayhem
   module Maps
     WALL_VERT          = '│'
     WALL_HORIZ         = '─'
-    DOOR               = '¤'
-    CAVE               = 'O'
+    DOOR               = '¤'.light_black
+    CAVE               = 'O'.light_black
     CORNER_UPPER_RIGHT = '┐'
     CORNER_UPPER_LEFT  = '┌'
     CORNER_LOWER_LEFT  = '└'
     CORNER_LOWER_RIGHT = '┘'
     SURFACE_STONE      = '.'
-    SURFACE_PLAIN      = ','
-    MARKET             = '$'
-    PLAYER             = '@'
-    COINPURSE          = '¢'
-    ITEM               = '!'
-    BANDIT             = '■'
+    SURFACE_GRASS      = ','
+    MARKET             = '$'.yellow
+    PLAYER             = '@'.cyan
+    COINPURSE          = '¢'.yellow
+    ITEM               = '!'.blue
+    BANDIT             = '■'.red
     OTHER              = '?'
-    TREE               = '∆'
+    TREE               = '∆'.green
   end
 
   class Map
@@ -92,7 +93,7 @@ module BanditMayhem
               end
 
               if x == player.location[:x] && y == player.location[:y]
-                map += Maps::PLAYER.cyan
+                map += Maps::PLAYER
                 non_surface = true
                 next
               end
@@ -118,25 +119,25 @@ module BanditMayhem
                   if x == poi['x'] && y == poi['y']
                     case poi['type']
                       when 'market'
-                        map += Maps::MARKET.yellow
+                        map += Maps::MARKET
                         non_surface = true
                       when 'coinpurse'
-                        map += Maps::COINPURSE.yellow
+                        map += Maps::COINPURSE
                         non_surface = true
                       when 'item', 'weapon'
-                        map += Maps::ITEM.blue
+                        map += Maps::ITEM
                         non_surface = true
                       when 'bandit'
-                        map += Maps::BANDIT.red
+                        map += Maps::BANDIT
                         non_surface = true
                       when 'tree'
-                        map += Maps::TREE.green
+                        map += Maps::TREE
                         non_surface = true
                       when 'cave'
-                        map += Maps::CAVE.light_black
+                        map += Maps::CAVE
                         non_surface = true
                       when 'door'
-                        map += Maps::DOOR.light_black
+                        map += Maps::DOOR
                         non_surface = true
                       when 'wall'
                         non_surface = true
@@ -176,7 +177,7 @@ module BanditMayhem
 
     # exit a location
     def exit_location(player)
-      # first we should favor the map's `exits` attribute.  otherwise, calulate the nearest free space
+      # first we should favor the map's `exits` attribute.  otherwise, calculate the nearest free space
       current_location = [player.location[:x], player.location[:y]]
 
       @poi.each do |poi|
@@ -216,9 +217,9 @@ module BanditMayhem
         when 'town'
           Maps::SURFACE_STONE
         when 'plains'
-          Maps::SURFACE_PLAIN
+          Maps::SURFACE_GRASS
         else
-          puts 'ERROR: invalid map type'.red
+          Maps::SURFACE_GRASS
       end
     end
   end

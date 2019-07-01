@@ -20,7 +20,7 @@ poi:
     x: 6
     y: 1
     exits:
-      x: 5
+      x: 7
     inventory:
       - Sword
       - Axe

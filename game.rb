@@ -1,8 +1,9 @@
+require 'characters/player'
+require 'commands'
+require 'settings'
+require 'media_player'
+
 require 'colorize'
-require './lib/characters/player'
-require './lib/commands'
-require './lib/settings'
-require './lib/media_player'
 require 'yaml'
 
 module BanditMayhem
@@ -11,8 +12,10 @@ module BanditMayhem
       def initialize(game_obj)
         @game = game_obj
         @descriptions = {
+          '/save_game (save_name)' => 'Save your game',
+          '/load_game (save_name)' => 'Load your save game',
           '/quit' => 'Quit out of the game',
-          '/history' => 'Show the history of commands youve used',
+          '/history' => 'Show the history of commands you\'ve used',
           # '/get_av (av)' => 'Get an attribute value',
           # '/set_av (av)' => 'Set an attribute value',
           '/use (item_id_or_name)' => 'Use an item',
@@ -43,20 +46,24 @@ module BanditMayhem
         puts @game.cmds
       end
 
-      # get an attribute value
-      def get_av(args)
-        args.each do |av|
-          puts @game.player.get_av(av).to_s.blue
-        end
+      def save_game(args)
+        save_name = args.first.to_s
+
+        _loc = @game.player.location
+
+        save = {
+          location: { map: _loc[:map].map_info['name'], x: _loc[:x], y: _loc[:y] },
+          player: @game.player,
+          maps: {}
+        }
+
+        File.open("#{save_name}.yml", 'w') { |s| s.write(save.to_yaml) }
+
+        puts 'Game Saved'.light_blue
       end
 
-      # set an attribute value
-      def set_av(args)
-        begin
-          @game.player.set_av(args[0].to_s, args[1].to_i) if Float(args[1])
-        rescue
-          @game.player.set_av(args[0].to_s, args[1])
-        end
+      def load_game(args)
+        puts 'loading'
       end
 
       # use an item.
@@ -79,8 +86,6 @@ module BanditMayhem
 
     attr_accessor :player, :quit, :cmds, :devmode, :media_player
 
-    @devmode = true
-
     # game initialization
     def initialize(name)
       @cmds = []
@@ -90,20 +95,24 @@ module BanditMayhem
       @player = BanditMayhem::Characters::Player.new({name: name})
       @command_proc = Commands.new(self)
 
+      @devmode = true
+
       @quit = false
 
       Game.cls
-      puts "\t\tWelcome to BANDIT MAYHEM, #{@player.get_av('name')}\n\n".yellow
     end
 
     # This is the main game loop.
     def main
-      return quit = true if @player.is_dead?
       update
     end
 
     def self.cls
-      system 'clear' unless system 'cls'
+      if RUBY_PLATFORM =~ /win32|win64|\.NET|windows|cygwin|mingw32/i
+        system('cls')
+      else
+        system('clear')
+      end
     end
 
     def self.media_player=(media_player)
@@ -129,14 +138,16 @@ module BanditMayhem
       end
 
       @player.location[:map].render_map(@player)
-      puts '-----' + @player.get_av('name').blue + '-----'
+      puts '-----' + @player.get_av('name').to_s.blue + '-----'
       puts @player.get_av('health').to_s.red + 'hp'
       puts '$' + @player.get_av('gold').to_s.yellow
       puts 'Weapon: ' + @player.weapon.get_property('name').to_s.green
       puts ''
       puts "Enter a command (type #{'/help'.magenta} for commands) (#{'w'.magenta},#{'a'.magenta},#{'s'.magenta},#{'d'.magenta} to move)"
       STDOUT.flush
+
       cmd = gets.chomp
+      # cmd = '/save test'
 
       if cmd[0] == '/'
         @command_proc.execute(cmd)

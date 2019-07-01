@@ -1,4 +1,4 @@
-require './lib/media/audite'
+require 'media/audite'
 
 module BanditMayhem
   class MediaPlayer

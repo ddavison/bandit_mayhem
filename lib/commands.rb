@@ -24,8 +24,9 @@ module BanditMayhem
 
         begin
           send("#{command_name}", params)
-        rescue NoMethodError
+        rescue NoMethodError => e
           puts "unknown command [#{command_name}]".red
+          $stderr.puts e
         rescue TypeError, Exception
           puts "you have an issue in your code for [#{command_name}]".red
         end

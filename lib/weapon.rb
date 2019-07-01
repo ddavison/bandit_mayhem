@@ -1,5 +1,4 @@
-require './lib/item'
-require './lib/weapon'
+require 'item'
 
 module BanditMayhem
   class Weapon < Item

@@ -1,4 +1,4 @@
-require './lib/item'
+require_relative '../item'
 
 module BanditMayhem
   module Items
@@ -14,10 +14,11 @@ module BanditMayhem
         super(props)
       end
 
-      def use(player)
-        return if player.get_av('luck') == 100
-        player.set_av('luck',
-          player.get_av('luck') + 15
+      def use(actor)
+        return if actor.get_av('luck') >= 100
+
+        actor.set_av('luck',
+          actor.get_av('luck') + 15
         )
       end
     end

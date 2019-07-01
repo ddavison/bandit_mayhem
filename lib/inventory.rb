@@ -1,13 +1,19 @@
 module BanditMayhem
   class Inventory
-    attr_accessor :slots
-    
     def initialize
       @slots = []
     end
 
     def add_item(item)
-      @slots << item
+      @slots << item if item.is_a? Item
+    end
+
+    def all_items
+      @slots
+    end
+
+    def has_item?(item)
+      @slots.include? item
     end
 
     def remove_item(item)

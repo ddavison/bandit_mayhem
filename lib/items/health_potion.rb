@@ -1,8 +1,9 @@
-require './lib/item'
+require 'item'
+require 'consumable'
 
 module BanditMayhem
   module Items
-    class HealthPotion < Item
+    class HealthPotion < Consumable
       def initialize
         props = {
           moniker: 'health_potion',
@@ -15,9 +16,9 @@ module BanditMayhem
         super(props)
       end
 
-      def use(player)
-        player.set_av('health',
-          player.get_av('health') + 25
+      def use(actor)
+        actor.set_av('health',
+          actor.get_av('health') + 25
         )
       end
     end

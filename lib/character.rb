@@ -1,18 +1,21 @@
-require './lib/inventory'
-require './lib/item'
-require './lib/map'
-require './lib/market'
-require './lib/helpers'
-require './lib/characters/player'
-require 'colorize'
+require 'inventory'
+require 'item'
+require 'map'
+require 'market'
+require 'helpers'
 
-require './lib/items/traversing_ring'
+require 'colorize'
+require 'symbolized'
+
+require 'items/traversing_ring'
 
 module BanditMayhem
   class Character
     attr_accessor :inventory,
                   :weapon,
                   :location
+
+    attr_reader :actor_values
 
     def initialize(stats)
       @location = {
@@ -22,25 +25,31 @@ module BanditMayhem
           y: -1
       }
 
+      stats.merge!({
+        name: 'Character',
+        health: 100,
+        max_health: 100,
+        str: 10,
+        def: 0,
+        level: 1,
+      })
+
       @inventory = BanditMayhem::Inventory.new
+      @actor_values = {}.to_symbolized_hash
 
-      @stats = {}
-
-      stats.each do |k,v|
-        set_av("base_#{k}", v)
-        set_av(k, v)
-      end
+      stats.map { |k, v| set_av(k, v) }
     end
 
-    # gets an attribute value
+    # gets an actor value
     def get_av(stat, default=nil)
-      set_av(stat, default) if @stats[stat.to_sym].nil?
-      @stats[stat.to_sym]
+      return @actor_values[stat] if @actor_values[stat]
+      set_av(stat, default)
     end
 
-    # sets an attribute value
+    # sets an actor value
     def set_av(stat, value)
-      @stats[stat.to_sym] = value
+      @actor_values["base_#{stat}"] = value unless @actor_values["base_#{stat}"]
+      @actor_values[stat] = value
     end
 
     def give(item)
@@ -51,10 +60,6 @@ module BanditMayhem
       else
         @inventory.add_item(item)
       end
-    end
-
-    def remove_all_items
-      @inventory.slots.clear
     end
 
     def use_item(arg)
@@ -99,8 +104,8 @@ module BanditMayhem
       false
     end
 
-    def merge_stats(new_stats)
-      @stats.merge!(new_stats)
+    def merge_avs(new_stats)
+      @actor_values&.merge!(new_stats) if new_stats
     end
 
     # equip a Weapon object.
@@ -117,7 +122,7 @@ module BanditMayhem
       Dir['./lib/weapons/*'].each { |file| require file }
 
       if target.is_a? BanditMayhem::Character
-        if target.is_dead?
+        if target.dead?
           # gold = target_health * ((attacked+target_attacks) / defense)
           gold = target.get_av('base_health') * get_av('attacks')
 
@@ -151,11 +156,11 @@ module BanditMayhem
       end
     end
 
-    def is_dead?
+    def dead?
       get_av('health').to_i <= 0
     end
 
-    # used for map detection. If the player collides with a market, for example.
+    # used for map detection. If the self collides with a market, for example.
     def interact_with(item)
       if is_a? BanditMayhem::Characters::Player
         if item[:map] # passing in the location object
@@ -220,7 +225,7 @@ module BanditMayhem
       end
     end
 
-    # move the character
+    # move the self
     def move(direction)
       Game.cls
       @location[:last] = [@location[:x], @location[:y]]
@@ -283,9 +288,8 @@ module BanditMayhem
       enemy.set_av('attacks', 0)
 
       @in_battle = true
-      player = self
 
-      # player will always go first.
+      # self will always go first.
       players_turn = true
 
       Game.cls
@@ -294,7 +298,7 @@ module BanditMayhem
       puts "\t\t" + enemy.get_av('avatar', '(no avatar)').to_s + "\n\n"
 
       while @in_battle
-        puts 'Your health: ' + player.get_av('health').to_s.red
+        puts 'Your health: ' + get_av('health').to_s.red
         puts enemy.get_av('name') + '\'s health: ' + enemy.get_av('health').to_s.red
         puts '------------------------'
 
@@ -302,14 +306,14 @@ module BanditMayhem
           puts 'Your turn...'.green
           fight_menu(enemy)
 
-          player.loot(enemy) if enemy.is_dead?
+          loot(enemy) if enemy.dead?
           players_turn = false
           @location[:map].remove_entity(@location)
         else
           # for now, all the enemy will do, is attack.
           puts "#{enemy.get_av('name')}'s turn...".red
 
-          attack(enemy, player)
+          attack(enemy, self)
           players_turn = true
         end
       end
@@ -333,7 +337,7 @@ module BanditMayhem
         src.get_av('attacks', 0).to_i + 1
       )
 
-      if dst.is_dead?
+      if dst.dead?
         puts src.get_av('name').to_s.red + ' has slain ' + dst.get_av('name').to_s.blue
         @in_battle = false
       end

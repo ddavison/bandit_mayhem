@@ -1,7 +1,8 @@
 require 'colorize'
-require './lib/commands'
-require './lib/item'
-require './lib/weapon'
+
+require 'commands'
+require 'item'
+require 'weapon'
 
 module BanditMayhem
   class Market

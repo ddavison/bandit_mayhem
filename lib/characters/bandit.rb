@@ -7,10 +7,6 @@ module BanditMayhem
       def initialize
         stats = {
           name: 'Bandit',
-          health: 100,
-          str: 10,
-          def: 0,
-          level: 1,
           avatar: <<-END
           `'#'
                                     ';::::;

@@ -1,18 +1,19 @@
+require 'symbolized'
+
 module BanditMayhem
   class Item
     def initialize(props)
-      @properties = props
+      @properties = props.to_symbolized_hash
     end
 
     def get_property(prop)
-      @properties[prop.to_sym]
+      @properties[prop]
     end
 
     # each item needs to implement "def use". there is no abstract in ruby.
 
     def is_weapon?
-      return true if get_property('weapon')
-      return false
+      !!get_property('weapon')
     end
 
     # return an object based on the moniker
