@@ -87,19 +87,19 @@ describe BanditMayhem::Map do
 
     context '4x4 smoke map fixture with pois' do
       it 'renders a door' do
-        expect(subject.get_entity_at(1, 1)).to include({ type: 'door' })
+        expect(subject.get_entity_at(x: 1, y: 1)).to include({ type: 'door' })
       end
 
       it 'renders a coinpurse' do
-        expect(subject.get_entity_at(2, 1)).to include({ type: 'coinpurse' })
+        expect(subject.get_entity_at(x: 2, y: 1)).to include({ type: 'coinpurse' })
       end
 
       it 'renders a shop' do
-        expect(subject.get_entity_at(3, 1)).to include({ type: 'shop' })
+        expect(subject.get_entity_at(x: 3, y: 1)).to include({ type: 'shop' })
       end
 
       it 'renders an item' do
-        expect(subject.get_entity_at(4, 1)).to include({ type: 'item', item: 'SmokeItem' })
+        expect(subject.get_entity_at(x: 4, y: 1)).to include({ type: 'item', item: 'SmokeItem' })
       end
     end
 
@@ -109,13 +109,13 @@ describe BanditMayhem::Map do
       end
 
       it 'renders a vert wall' do
-        expect(subject.get_entity_at(1, 2)).to include({ type: 'wall', direction: 'vert'})
-        expect(subject.get_char_at(1, 2)).to eq(BanditMayhem::Maps::WALL_VERT)
+        expect(subject.get_entity_at(x: 1, y: 2)).to include({ type: 'wall', direction: 'vert'})
+        expect(subject.get_char_at(x: 1, y: 2)).to eq(BanditMayhem::Maps::WALL_VERT)
       end
 
       it 'renders a horiz wall' do
-        expect(subject.get_entity_at(2, 2)).to include({ type: 'wall', direction: 'horiz'})
-        expect(subject.get_char_at(2, 2)).to eq(BanditMayhem::Maps::WALL_HORIZ)
+        expect(subject.get_entity_at(x: 2, y: 2)).to include({ type: 'wall', direction: 'horiz'})
+        expect(subject.get_char_at(x: 2, y: 2)).to eq(BanditMayhem::Maps::WALL_HORIZ)
       end
     end
   end
