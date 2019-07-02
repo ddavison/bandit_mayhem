@@ -1,16 +1,18 @@
 ---
 image: ruby:2.6.3
 
-stages: 
+stages:
 - sanity
 - test
 - package
 
 before_script:
+- apt-get install -y libjack0 libjack-dev
+- apt-get install -y libportaudiocpp0 portaudio19-dev libmpg123-dev
 - gem install bundler
 - bundle install
 
-map-validation:
+maps:validate:
   stage: sanity
   script: bundle exec rake validate_maps
 
