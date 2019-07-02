@@ -2,7 +2,7 @@ require 'item'
 
 module BanditMayhem
   class Weapon < Item
-    def initialize(add_props)
+    def initialize(add_props={})
       # base stats
       props = { sell_value: 40,
         buy_value: 80,
@@ -11,6 +11,10 @@ module BanditMayhem
 
       super(props)
     end
+
+    # def use!
+    #   use! { |char| char.equip!(self) }
+    # end
 
     # return an object based on the moniker
     def self.by_name(name)

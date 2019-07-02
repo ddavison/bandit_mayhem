@@ -1,7 +1,7 @@
 require 'item'
 require 'map'
 require 'market'
-require 'helpers'
+require 'utils'
 
 require 'colorize'
 require 'symbolized'
@@ -58,11 +58,7 @@ module BanditMayhem
 
     # equip a Weapon object.
     def equip!(weapon)
-      if weapon.is_a? Weapon
-        @weapon = weapon
-      else
-        puts 'you tried to equip something that is not a weapon.'.red
-      end
+      @weapon = weapon if weapon.is_a? Weapon
     end
 
     def loot(target)
@@ -78,7 +74,6 @@ module BanditMayhem
         else
           puts 'cannot loot something thats not dead'.red
         end
-
 
         merge_avs(everything_looted)
         target.actor_values.delete_if { |k, v| everything_looted.key?(k) }
@@ -97,12 +92,6 @@ module BanditMayhem
             itm = Object.const_get('BanditMayhem').const_get('Items').const_get(target['item']).new
             items << itm
         end
-      end
-    end
-
-    def show_inventory
-      inventory.slots.each do |item|
-        puts inventory.slots.index(item).to_s + '. ' + item.get_property('name').green + ' : ' + item.get_property('description').green
       end
     end
 
@@ -263,7 +252,7 @@ module BanditMayhem
           # for now, all the enemy will do, is attack.
           puts "#{enemy.get_av('name')}'s turn...".red
 
-          attack(enemy, self)
+          attack(enemy)
           players_turn = true
         end
       end
@@ -273,24 +262,35 @@ module BanditMayhem
       end
     end
 
-    def attack(src, dst)
+    # return hash
+    def attack(target)
       sleep(1)
-      total_dmg = (BanditMayhem::Helpers.calculate_attack_damage(src) - BanditMayhem::Helpers.calculate_defense(dst))
+      total_dmg = (calculate_attack_damage)
+      target_health_after = target.get_av('health') - total_dmg
 
-      dst.set_av('health',
-        dst.get_av('health') - total_dmg
+      battle_aftermath = {
+        damage_dealt: total_dmg,
+        target_health_before: target.get_av('health'),
+        target_health_after: target_health_after
+      }.to_symbolized_hash
+
+      target.set_av('health',
+        target.get_av('health') - total_dmg
       )
 
-      puts "\n" + src.get_av('name').to_s.red + ' attacked ' + dst.get_av('name').to_s.blue + ' for ' + total_dmg.to_s.green + " dmg.\n-----------------"
+      puts "\n" + get_av('name').to_s.red + ' attacked ' + target.get_av('name').to_s.blue + ' for ' + total_dmg.to_s.green + " dmg.\n-----------------"
 
-      src.set_av('attacks',
-        src.get_av('attacks', 0).to_i + 1
+      set_av('attacks',
+        get_av('attacks', 0).to_i + 1
       )
 
-      if dst.dead?
-        puts src.get_av('name').to_s.red + ' has slain ' + dst.get_av('name').to_s.blue
+      if target.dead?
+        puts src.get_av('name').to_s.red + ' has slain ' + target.get_av('name').to_s.blue
+        battle_aftermath[:target_died] = true
         @in_battle = false
       end
+
+      battle_aftermath
     end
 
     def fight_menu(enemy)
@@ -307,9 +307,9 @@ module BanditMayhem
 
       if cmd.eql? 1
         # attack
-        attack(self, enemy)
+        attack(enemy)
       elsif cmd.eql? 2
-        if BanditMayhem::Helpers.shuffle_percent(get_av('luck'))
+        if BanditMayhem::Utils.shuffle_percent(get_av('luck'))
           # run away
           @in_battle = false
           puts 'You ran away'.green
@@ -328,6 +328,18 @@ module BanditMayhem
         item = gets.chomp
         use_item(item.to_i)
       end
+    end
+
+    private
+    def calculate_attack_damage
+      # dmg = str + weapon.str + (level*5) + (luck / 3)
+      weapon_str = 0 || weapon.properties[:str].to_i
+      (get_av('str').to_i + weapon_str + (get_av('level').to_i * 5) + (get_av('luck', 0).to_i / 3))
+    end
+
+    def calculate_defense(target)
+      # def = player def + level + (luck / 5)
+      (target.get_av('def').to_i + target.get_av('level').to_i + (target.get_av('luck', 0).to_i / 5))
     end
   end
 end

@@ -37,7 +37,7 @@ module BanditMayhem
                 :west,
                 :poi
 
-    def initialize(name)
+    def initialize(name, map_attrs={})
       begin
         @map_info = YAML.load_file("./lib/maps/#{name}.yml")
       rescue

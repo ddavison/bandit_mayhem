@@ -1,7 +1,10 @@
-require 'characters/player'
-require 'commands'
-require 'settings'
-require 'media_player'
+$: << File.join(File.expand_path(File.dirname(__FILE__)), '/lib')
+
+
+require_relative 'lib/commands'
+require_relative 'lib/settings'
+require_relative 'lib/media_player'
+require_relative 'lib/characters/player'
 
 require 'colorize'
 require 'yaml'
@@ -141,7 +144,7 @@ module BanditMayhem
       puts '-----' + @player.get_av('name').to_s.blue + '-----'
       puts @player.get_av('health').to_s.red + 'hp'
       puts '$' + @player.get_av('gold').to_s.yellow
-      puts 'Weapon: ' + @player.weapon.get_property('name').to_s.green
+      puts 'Weapon: ' + @player.weapon.get_property('name').to_s.green if @player.weapon
       puts ''
       puts "Enter a command (type #{'/help'.magenta} for commands) (#{'w'.magenta},#{'a'.magenta},#{'s'.magenta},#{'d'.magenta} to move)"
       STDOUT.flush

@@ -1,3 +1,5 @@
+require 'items/consumable'
+
 module BanditMayhem
   module Items
     class HealthPotion < Consumable
@@ -11,7 +13,7 @@ module BanditMayhem
         })
       end
 
-      def use(actor)
+      def use_on!(actor)
         actor.set_av('health',
           actor.get_av('health') + 25
         )

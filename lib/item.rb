@@ -8,9 +8,8 @@ module BanditMayhem
       @properties = props.to_symbolized_hash
     end
 
-    # each item needs to implement "def use". there is no abstract in ruby.
-    def use
-      yield
+    # each item needs to implement "def use_on!". there is no abstract in ruby.
+    def use_on!(actor)
     end
 
     # return an object based on the moniker

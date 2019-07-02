@@ -2,7 +2,8 @@ require 'character'
 require 'characters/bandit'
 
 describe BanditMayhem::Character do
-  subject { BanditMayhem::Character.new({health: 100, max_health: 100}) }
+  subject { BanditMayhem::Character.new({health: 100, max_health: 100, level: 1}) }
+
   context 'actor values' do
     it '#set_av/#get_av can put/get with base' do
       subject.set_av('foo', 'bar')
@@ -27,17 +28,17 @@ describe BanditMayhem::Character do
       subject.set_av('foo', 'bar')
       expect(subject.get_av('foo', 'baz')).to eq('bar')
     end
-  end
 
-  it '#dead? actor is dead when health is like 0' do
-    subject.set_av('health', 0)
-    expect(subject).to be_dead
+    it '#dead? actor is dead when health is like 0' do
+      subject.set_av('health', 0)
+      expect(subject).to be_dead
 
-    subject.set_av('health', 3)
-    expect(subject).not_to be_dead
+      subject.set_av('health', 3)
+      expect(subject).not_to be_dead
 
-    subject.set_av('health', -47)
-    expect(subject).to be_dead
+      subject.set_av('health', -47)
+      expect(subject).to be_dead
+    end
   end
 
   context 'looting' do
@@ -56,16 +57,90 @@ describe BanditMayhem::Character do
     end
 
     it 'gold calculates (level*15+(attacks*3))' do
+      # gold = level * 15 (attacks * 3)
       at_level_1 = 1
       number_of_attacks = 0
       gold_should_be = at_level_1 * 15 + (number_of_attacks * 3)
 
       expect(character_level_1.get_av('level')).to eq(at_level_1)
-      expect(subject.loot(character_level_1)).to include({gold: gold_should_be})
+      expect(subject.loot(character_level_1)).to include({ gold: gold_should_be })
+    end
+
+    it 'doesnt override players existing gold. it adds it' do
+      subject.set_av('gold', 10)
+      character_level_1.set_av('health', 0) # has to be dead
+      character_level_1.set_av('gold', 5) # has to be dead
+
+      expect(subject.get_av('gold')).to eq(10)
+      subject.loot(character_level_1)
+      expect(subject.get_av('gold')).to eq(15)
     end
   end
 
   context 'battle' do
+    let(:adversary) { BanditMayhem::Character.new({health: 100}) }
 
+    context '#calculate_attack_damage' do
+      # this test is in here in case the formula for attack damage ever gets changed (for scaling)
+      # dmg = str + weapon.str + (level * 5) + (luck / 3)
+      let(:str) { subject.get_av('str') }
+      let(:level) { 1 }
+      let(:weapon_str) { 0 } # no weapon = zero weapon.str
+      let(:luck) { 0 }
+      let(:dmg) { str + weapon_str + (level * 5) + (luck / 3) }
+
+      it 'follows  dmg = str + weapon.str + (level * 5) + (luck / 3)' do
+        expect(subject.attack(adversary)).to include({damage_dealt: dmg})
+      end
+    end
+
+    context 'attacking' do
+      it 'can attack another character with base strength' do
+        expect(subject.get_av('str')).to eq(10)
+        expect(subject.get_av('attacks')).to be_nil
+
+        expect(subject.attack(adversary)).to include({target_health_before: 100, damage_dealt: 15})
+        expect(subject.get_av('attacks')).to eq(1)
+      end
+    end
+
+    context 'defending' do
+      let(:health) { subject.get_av('health') }
+
+      it 'can be attacked and lose health' do
+        expect(health).to eq(100)
+
+        adversary.attack(subject)
+
+        expect(subject.get_av('health')).to be < health
+      end
+    end
+  end
+
+  context 'items' do
+    let(:weapon) { BanditMayhem::Weapon.new }
+    let(:consumable) { Class.new(BanditMayhem::Item) do
+      def use_on!(actor)
+        actor.set_av('health',
+          actor.get_av('health') + 25)
+      end
+    end}
+
+    context 'weapons' do
+      it '#equip! equips a weapon' do
+        expect(subject.weapon).to be_nil
+        subject.equip!(weapon)
+
+        expect(subject.weapon).to be(weapon)
+      end
+
+    end
+
+    it 'cant #equip! items or consumables' do
+      expect(subject.weapon).to be_nil
+      subject.equip!(consumable)
+
+      expect(subject.weapon).to be_nil
+    end
   end
 end
