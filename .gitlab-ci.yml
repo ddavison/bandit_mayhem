@@ -14,7 +14,7 @@ before_script:
 
 maps:validate:
   stage: sanity
-  script: bundle exec rake validate_maps
+  script: bundle exec rake maps:validate
 
 specs:
   stage: test
