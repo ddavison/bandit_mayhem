@@ -1,7 +1,7 @@
 ---
 name: QA Smoke
-width: 2
-height: 2
+width: 10
+height: 10
 
 poi:
   - type: door
@@ -10,14 +10,19 @@ poi:
   - type: coinpurse
     x: 2
     y: 1
-  - type: market
+  - type: shop
     x: 3
     y: 1
-  - type: wall
-    direction: vert
+  - type: item
+    item: SmokeItem
     x: 4
     y: 1
-  - type: item
-    item: TraversingRing
-    x: 5
-    y: 1
+
+  - type: wall
+    direction: vert
+    x: 1
+    y: 2
+  - type: wall
+    direction: horiz
+    x: 2
+    y: 2

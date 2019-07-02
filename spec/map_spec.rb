@@ -1,5 +1,6 @@
 require 'map'
 require 'character'
+require 'colorize'
 
 describe BanditMayhem::Map do
   subject { BanditMayhem::Map.new(name: 'qasmoke', file: File.absolute_path(File.join('spec', 'fixtures', 'map_qasmoke.yml'))) }
@@ -85,6 +86,43 @@ describe BanditMayhem::Map do
             expect(bottom_row[x]).to eq(BanditMayhem::Maps::WALL_HORIZ)
           end
         end
+      end
+    end
+
+    context '4x4 smoke map fixture with pois' do
+      it 'renders a door' do
+        # puts map
+        expect(subject.get_entity_at(1, 1)).to include({ type: 'door' })
+      end
+
+      it 'renders a coinpurse' do
+        expect(subject.get_entity_at(2, 1)).to include({ type: 'coinpurse' })
+      end
+
+      it 'renders a shop' do
+        expect(subject.get_entity_at(3, 1)).to include({ type: 'shop' })
+      end
+
+      it 'renders an item' do
+        expect(subject.get_entity_at(4, 1)).to include({ type: 'item', item: 'SmokeItem' })
+      end
+    end
+
+    context 'walls' do
+      let(:map) { subject.build!(character) }
+
+      before(:each) do
+        puts map
+      end
+
+      it 'renders a vert wall' do
+        expect(subject.get_entity_at(1, 2)).to include({ type: 'wall', direction: 'vert'})
+        expect(subject.get_char_at(1, 2)).to eq(BanditMayhem::Maps::WALL_VERT)
+      end
+
+      it 'renders a horiz wall' do
+        expect(subject.get_entity_at(2, 2)).to include({ type: 'wall', direction: 'horiz'})
+        expect(subject.get_char_at(2, 2)).to eq(BanditMayhem::Maps::WALL_HORIZ)
       end
     end
   end
