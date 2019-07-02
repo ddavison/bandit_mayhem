@@ -16,7 +16,7 @@ module BanditMayhem
 
     attr_reader :actor_values
 
-    def initialize(add_stats)
+    def initialize(add_stats={})
       @location = {
           map: nil,
           last: nil,
@@ -333,7 +333,7 @@ module BanditMayhem
     private
     def calculate_attack_damage
       # dmg = str + weapon.str + (level*5) + (luck / 3)
-      weapon_str = 0 || weapon.properties[:str].to_i
+      weapon_str = 0 || weapon.attributes[:str].to_i
       (get_av('str').to_i + weapon_str + (get_av('level').to_i * 5) + (get_av('luck', 0).to_i / 3))
     end
 

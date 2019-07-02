@@ -1,4 +1,4 @@
-$: << File.join(File.expand_path(File.dirname(__FILE__)), '/lib')
+$: << File.join(File.expand_path(File.dirname(__FILE__)), 'lib')
 
 
 require_relative 'lib/commands'
@@ -55,7 +55,7 @@ module BanditMayhem
         _loc = @game.player.location
 
         save = {
-          location: { map: _loc[:map].map_info['name'], x: _loc[:x], y: _loc[:y] },
+          location: {map: _loc[:map].attributes['name'], x: _loc[:x], y: _loc[:y] },
           player: @game.player,
           maps: {}
         }
@@ -77,7 +77,7 @@ module BanditMayhem
       # show the player's current items.
       def inv(args)
         @game.player.items.each do |item|
-          puts @game.player.items.index(item).to_s + '. ' + item.properties[:name].green + ' : ' + item.properties[:description].green
+          puts @game.player.items.index(item).to_s + '. ' + item.attributes[:name].green + ' : ' + item.attributes[:description].green
         end
       end
 
@@ -133,9 +133,9 @@ module BanditMayhem
       # show health
       if @settings.get('music', true)
         unless Game.media_player.playing?
-          unless Game.media_player.playing_level? @player.location[:map].map_info['name']
+          unless Game.media_player.playing_level? @player.location[:map].attributes['name']
             # start playing the map track unless it's already playing
-            Game.media_player.play_level_song(@player.location[:map].map_info['name'])
+            Game.media_player.play_level_song(@player.location[:map].attributes['name'])
           end
         end
       end

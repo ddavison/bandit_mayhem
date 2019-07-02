@@ -12,6 +12,6 @@ map_to_render = ARGV[0]
 
 map = BanditMayhem::Map.new(map_to_render)
 
-map_data = map.get_map(player)
+map_data = map.build!(player)
 
 File.open('map', map_data)

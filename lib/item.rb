@@ -2,10 +2,10 @@ require 'symbolized'
 
 module BanditMayhem
   class Item
-    attr_accessor :properties
+    attr_accessor :attributes
 
-    def initialize(props={})
-      @properties = props.to_symbolized_hash
+    def initialize(attributes={})
+      @attributes = attributes.to_symbolized_hash
     end
 
     # each item needs to implement "def use_on!". there is no abstract in ruby.

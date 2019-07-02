@@ -1,5 +1,6 @@
 require 'yaml'
 require 'colorize'
+require 'symbolized'
 
 module BanditMayhem
   module Maps
@@ -25,10 +26,10 @@ module BanditMayhem
   class Map
 
     def to_s
-      @map_info['name']
+      @attributes['name']
     end
 
-    attr_reader :map_info,
+    attr_reader :attributes,
                 :width,
                 :height,
                 :north,
@@ -37,54 +38,65 @@ module BanditMayhem
                 :west,
                 :poi
 
-    def initialize(name, map_attrs={})
+    def initialize(args)
+      @attributes = {}.to_symbolized_hash
+
+      raise 'map name is required' unless args[:name]
+
       begin
-        @map_info = YAML.load_file("./lib/maps/#{name}.yml")
+        @attributes.merge!(YAML.load_file(args[:file])) if args[:file]
+        @attributes.merge!(args[:attributes]) if args[:attributes]
+
+        default_map_to_load = File.absolute_path(File.join('lib', 'maps', "#{args[:name]}.yml"))
+        @attributes.merge!(YAML.load_file(default_map_to_load)) unless !!(args[:attributes] || args[:file])
       rescue
-        puts "mapfile [#{name}.yml] is invalid"
+        puts "mapfile [#{args[:name]}.yml] is invalid"
       end
 
-      @width  = @map_info['width']
-      @height = @map_info['height']
+      @width  = @attributes['width']
+      @height = @attributes['height']
 
-      @north = @map_info['north']
-      @south = @map_info['south']
-      @east  = @map_info['east']
-      @west  = @map_info['west']
+      @boundary_width = @width.to_i * 2
+      @boundary_height = @height.to_i * 2
+
+      @north = @attributes['north']
+      @south = @attributes['south']
+      @east  = @attributes['east']
+      @west  = @attributes['west']
+
+      @area = width * height
+      @perimeter = 2 * @area
 
       @locations = []
 
-      @poi = @map_info['poi']
+      @poi = @attributes['poi']
     end
 
-    def get_map(player)
+    def build!(player)
       # the map string
-      map = ''
+      map = String.new
       map_surface = get_surface
 
-      actual_height = @height - 1
-      actual_width = @width - 1
-
-      @height.times do |y|
-        @width.times do |x|
+      @boundary_height.times do |y|  # columns
+        @boundary_width.times do |x| # rows
           non_surface = false
           case x
             when 0
               if y == 0
                 map += Maps::CORNER_UPPER_LEFT
                 next
-              elsif y == actual_height
+              elsif y == @boundary_height
                 map += Maps::CORNER_LOWER_LEFT
                 next
               else
                 map += Maps::WALL_VERT
                 next
               end
-            when actual_width
+            when @boundary_width - 1
               if y == 0
                 map += Maps::CORNER_UPPER_RIGHT
                 next
-              elsif y == actual_height
+              elsif y == @boundary_height
                 map += Maps::CORNER_LOWER_RIGHT
                 next
               else
@@ -92,74 +104,74 @@ module BanditMayhem
                 next
               end
             else
-              if y == 0 || y == actual_height
+              if y == 0 || y == @boundary_width
                 map += Maps::WALL_HORIZ
                 next
               end
 
-              if x == player.location[:x] && y == player.location[:y]
-                map += Maps::PLAYER
-                non_surface = true
-                next
-              end
+              # if x == player.location[:x] && y == player.location[:y]
+              #   map += Maps::PLAYER
+              #   non_surface = true
+              #   next
+              # end
 
-              if @poi.any?
-                @poi.each do |poi|
-                  @locations << [poi['x'], poi['y']] unless @locations.include? [poi['x'], poi['y']]
-                  if player.location[:x] == poi['x'] && player.location[:y] == poi['y']
-                    if poi['type'] == 'item' || poi['type'] == 'weapon' || poi['type'] == 'coinpurse'
-                      @poi.delete(poi)
-                    end
-                    if poi['consumable']
-                      if poi['consumable'].is_a? Hash
-                        # there is a condition.
-                        @poi.delete(poi) if player.get_av(poi['consumable']['unless'], false)
-                      else
-                        @poi.delete(poi) if @poi.include? poi
-                      end
-                    end
-
-                    return player.interact_with poi
-                  end
-                  if x == poi['x'] && y == poi['y']
-                    case poi['type']
-                      when 'market'
-                        map += Maps::MARKET
-                        non_surface = true
-                      when 'coinpurse'
-                        map += Maps::COINPURSE
-                        non_surface = true
-                      when 'item', 'weapon'
-                        map += Maps::ITEM
-                        non_surface = true
-                      when 'bandit'
-                        map += Maps::BANDIT
-                        non_surface = true
-                      when 'tree'
-                        map += Maps::TREE
-                        non_surface = true
-                      when 'cave'
-                        map += Maps::CAVE
-                        non_surface = true
-                      when 'door'
-                        map += Maps::DOOR
-                        non_surface = true
-                      when 'wall'
-                        non_surface = true
-                        case poi['direction']
-                          when 'vertical', 'vert'
-                            map += Maps::WALL_VERT
-                          when 'horizontal', 'horiz'
-                            map += Maps::WALL_HORIZ
-                        end
-                      else
-                        map += Maps::OTHER
-                        non_surface = true
-                    end
-                    next
-                  end
-                end
-              end
+              # if @poi.any?
+              #   @poi.each do |poi|
+              #     @locations << [poi['x'], poi['y']] unless @locations.include? [poi['x'], poi['y']]
+              #     if player.location[:x] == poi['x'] && player.location[:y] == poi['y']
+              #       if poi['type'] == 'item' || poi['type'] == 'weapon' || poi['type'] == 'coinpurse'
+              #         @poi.delete(poi)
+              #       end
+              #       if poi['consumable']
+              #         if poi['consumable'].is_a? Hash
+              #           # there is a condition.
+              #           @poi.delete(poi) if player.get_av(poi['consumable']['unless'], false)
+              #         else
+              #           @poi.delete(poi) if @poi.include? poi
+              #         end
+              #       end
+              #
+              #       return player.interact_with poi
+              #     end
+              #     if x == poi['x'] && y == poi['y']
+              #       case poi['type']
+              #         when 'market'
+              #           map += Maps::MARKET
+              #           non_surface = true
+              #         when 'coinpurse'
+              #           map += Maps::COINPURSE
+              #           non_surface = true
+              #         when 'item', 'weapon'
+              #           map += Maps::ITEM
+              #           non_surface = true
+              #         when 'bandit'
+              #           map += Maps::BANDIT
+              #           non_surface = true
+              #         when 'tree'
+              #           map += Maps::TREE
+              #           non_surface = true
+              #         when 'cave'
+              #           map += Maps::CAVE
+              #           non_surface = true
+              #         when 'door'
+              #           map += Maps::DOOR
+              #           non_surface = true
+              #         when 'wall'
+              #           non_surface = true
+              #           case poi['direction']
+              #             when 'vertical', 'vert'
+              #               map += Maps::WALL_VERT
+              #             when 'horizontal', 'horiz'
+              #               map += Maps::WALL_HORIZ
+              #           end
+              #         else
+              #           map += Maps::OTHER
+              #           non_surface = true
+              #       end
+              #       next
+              #     end
+              #   end
+              # end
               map += map_surface unless non_surface
           end
           non_surface = false
@@ -175,9 +187,9 @@ module BanditMayhem
       player.location[:x] = @width - 2 if player.location[:x] > @width - 2
       player.location[:y] = @height- 2 if player.location[:y] > @height- 2
 
-      puts 'You are currently in ' + @map_info['name'].to_s.green
+      puts 'You are currently in ' + @attributes['name'].to_s.green
 
-      puts get_map(player)
+      puts build!(player)
     end
 
     # exit a location
@@ -218,7 +230,7 @@ module BanditMayhem
     end
 
     def get_surface
-      case @map_info['type']
+      case @attributes['type']
         when 'town'
           Maps::SURFACE_STONE
         when 'plains'

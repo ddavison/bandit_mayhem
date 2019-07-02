@@ -4,7 +4,7 @@ require 'weapons/stick'
 module BanditMayhem
   module Characters
     class Player < Character
-      def initialize(add_stats)
+      def initialize(add_stats={})
         stats = {
           name:   'Nigel',
         }.merge(add_stats)
@@ -19,7 +19,7 @@ module BanditMayhem
         # ])
 
         @location = {
-            map: BanditMayhem::Map.new('lynwood'),
+            map: BanditMayhem::Map.new(name: 'lynwood'),
             x: 3,
             y: 3
         }.to_symbolized_hash
