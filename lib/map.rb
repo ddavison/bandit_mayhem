@@ -42,30 +42,24 @@ module BanditMayhem
     def initialize(args)
       @attributes = {}.to_symbolized_hash
 
-      raise '@render name is required' unless args[:name]
-
       begin
-        @attributes.merge!(YAML.load_file(args[:file])) if args[:file]
-        @attributes.merge!(args[:attributes]) if args[:attributes]
-
-        default_map_to_load = File.absolute_path(File.join('lib', 'maps', "#{args[:name]}.yml"))
-        @attributes.merge!(YAML.load_file(default_map_to_load)) unless !!(args[:attributes] || args[:file])
-      rescue
-        puts "mapfile [#{args[:name]}.yml] is invalid"
+        if args.is_a? String
+          default_map_to_load = File.expand_path(File.join('lib', 'maps', "#{args}.yml"))
+          @attributes.merge!(YAML.load_file(default_map_to_load)) if File.exists?(default_map_to_load)
+          @attributes.merge!(YAML.load_file(File.expand_path("#{args}.yml"))) if File.exists?(File.expand_path("#{args}.yml"))
+        elsif args.is_a? Hash
+          @attributes.merge!(YAML.load_file(File.expand_path(args[:file]))) if args[:file]
+          @attributes.merge!(args[:attributes]) if args[:attributes]
+        end
+      rescue => e
+        puts e
+        raise "Cant load map #{args.inspect}"
       end
 
-      @width  = @attributes['width']
-      @height = @attributes['height']
+      @boundary_width = @attributes[:width].to_i + 2
+      @boundary_height = @attributes[:height].to_i + 2
 
-      @boundary_width = @width.to_i + 2
-      @boundary_height = @height.to_i + 2
-
-      @north = @attributes['north']
-      @south = @attributes['south']
-      @east  = @attributes['east']
-      @west  = @attributes['west']
-
-      # @area = @width * @height
+      # @area = @attributes[:width] * @attributes[:height]
       # @perimeter = 2 * @area
 
       @locations = []
@@ -185,10 +179,10 @@ module BanditMayhem
     # render the @render
     # @param player - because we need the players position.
     def render_map(player)
-      player.location[:x] = @width - 2 if player.location[:x] > @width - 2
-      player.location[:y] = @height- 2 if player.location[:y] > @height- 2
+      player.location[:x] = @attributes[:width] - 2 if player.location[:x] > @attributes[:width] - 2
+      player.location[:y] = @attributes[:height]- 2 if player.location[:y] > @attributes[:height] - 2
 
-      puts 'You are currently in ' + @attributes['name'].to_s.green
+      puts 'You are currently in ' + @attributes[:name].to_s.green
 
       puts build!(player)
     end
@@ -210,22 +204,24 @@ module BanditMayhem
       end
     end
 
-    def get_entity_at(x, y)
-      raise 'need x and y coordinates' unless x&.is_a? Numeric and y&.is_a? Numeric
+    def get_entity_at(location)
+      raise 'need x and y coordinates' unless location[:x]&.is_a? Numeric and location[:y]&.is_a? Numeric
 
       ret = nil
-      @poi.each do |poi|
-        ret = poi if poi['x'] == x && poi['y'] == y
+      if @poi&.any?
+        @poi.each do |poi|
+          ret = poi if poi['x'] == location[:x] && poi['y'] == location[:y]
+        end
       end
       ret
     end
 
-    def get_char_at(x, y)
-      raise 'need x and y coordinates' unless x&.is_a? Numeric and y&.is_a? Numeric
+    def get_char_at(location)
+      raise 'need x and y coordinates' unless location[:x]&.is_a? Numeric and location[:y]&.is_a? Numeric
       raise 'map needs built first' unless @render
 
       @render_lines ||= @render.split("\n")
-      @render_lines[y][x]
+      @render_lines[location[:y]][location[:x]]
     end
 
     def remove_entity(*args)

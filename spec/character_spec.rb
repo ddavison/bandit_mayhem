@@ -143,4 +143,140 @@ describe BanditMayhem::Character do
       expect(subject.weapon).to be_nil
     end
   end
+
+  describe 'movement' do
+    let(:map) { BanditMayhem::Map.new(name: 'test', attributes: { width: 5, height: 5 })}
+
+    context 'warping' do
+      it 'saves the last location' do
+        expect(subject.location).to include({x: -1, y: -1})
+        expect(subject.location[:last]).to be_nil
+
+        subject.warp(x: 1, y: 1)
+        expect(subject.location).to include({x: 1, y: 1})
+        expect(subject.location[:last]).to include({x: 1, y: 1})
+      end
+    end
+
+    context '[wasd]' do
+      before(:each) do
+        subject.location[:map] = map
+        subject.warp(x: 2, y: 2)
+      end
+
+
+      it '#warp takes us to 2,2' do
+        expect(subject.location[:x]).to eq(2)
+        expect(subject.location[:y]).to eq(2)
+      end
+
+      it 'w is y-1' do
+        subject.move('w')
+
+        expect(subject.location[:y]).to eq(1)
+        expect(subject.location[:last][:y]).to eq(2)
+      end
+
+      it 'a is x-1' do
+        subject.move('a')
+
+        expect(subject.location[:x]).to eq(1)
+        expect(subject.location[:last][:x]).to eq(2)
+      end
+
+      it 's is y+1' do
+        subject.move('s')
+
+        expect(subject.location[:y]).to eq(3)
+        expect(subject.location[:last][:y]).to eq(2)
+      end
+
+      it 'd is x+1' do
+        subject.move('d')
+
+        expect(subject.location[:x]).to eq(3)
+        expect(subject.location[:last][:x]).to eq(2)
+      end
+
+      context 'boundaries' do
+        context 'world boundaries' do
+          context 'no adjacent world' do
+            it 'cant go left past boundary' do
+              subject.warp(x: 1)
+              subject.move('a')
+
+              expect(subject.location[:x]).to eq(subject.location[:last][:x])
+            end
+
+            it 'cant go right past boundary' do
+              subject.warp(x: 5)
+              subject.move('d')
+
+              expect(subject.location[:x]).to eq(subject.location[:last][:x])
+            end
+
+            it 'cant go up past boundary' do
+              subject.warp(y: 1)
+              subject.move('w')
+
+              expect(subject.location[:y]).to eq(subject.location[:last][:y])
+            end
+
+            it 'cant go down past boundary' do
+              subject.warp(y: 5)
+              subject.move('s')
+
+              expect(subject.location[:y]).to eq(subject.location[:last][:y])
+            end
+          end
+
+          context 'adjacent world' do
+            let(:map) { BanditMayhem::Map.new(name: 'map', file: File.absolute_path(File.join('spec', 'fixtures', 'map_with_borders.yml'))) }
+
+            before(:each) { subject.warp(x: 1, y: 1) }
+
+            it 'can go north' do
+              subject.move('w') # hit the north border
+
+              expect(subject.location[:map].to_s).to eq('north_map')
+            end
+
+            it 'can go south' do
+              subject.move('s')
+
+              expect(subject.location[:map].to_s).to eq('south_map')
+            end
+
+            it 'can go east' do
+              subject.move('d')
+
+              expect(subject.location[:map].to_s).to eq('east_map')
+            end
+
+            it 'can go west' do
+              subject.move('a')
+
+              expect(subject.location[:map].to_s).to eq('west_map')
+            end
+          end
+        end
+
+        context 'walls' do
+          let(:map) { BanditMayhem::Map.new(file: File.absolute_path(File.join('spec', 'fixtures', 'map_jail.yml'))) }
+
+          before(:each) do
+            subject.warp(x: 2, y: 2)
+            puts map.build!(subject)
+          end
+
+          it 'cant go through a vert wall using a/d' do
+            subject.move('a')
+            expect(subject.location[:x]).to eq(subject.location[:last][:x])
+          end
+
+          it 'cant go through a horiz wall using w/s'
+        end
+      end
+    end
+  end
 end

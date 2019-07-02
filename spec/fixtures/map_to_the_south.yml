@@ -1,0 +1,6 @@
+---
+name: south_map
+width: 1
+height: 1
+
+north: spec/fixtures/map_with_borders

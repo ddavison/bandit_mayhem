@@ -8,7 +8,7 @@ describe BanditMayhem::Map do
 
   context 'initialization' do
     context 'default load' do
-      subject { BanditMayhem::Map.new(name: 'lynwood') }
+      subject { BanditMayhem::Map.new('lynwood') }
 
       it 'loads a default named map' do
         expect(subject.attributes).to include({ type: 'town' })
@@ -39,14 +39,12 @@ describe BanditMayhem::Map do
       let(:map) { subject.build!(character) }
 
       it 'will render 4 characters total in width and height' do
-        puts subject.build!(character)
         m = subject.build!(character).split("\n")
 
         expect(m.size).to eq(4) # total level
       end
 
       it 'has corner bends' do
-        puts map
         map_lines = map.split("\n")
 
         expect(map_lines.first[0]).to eq(BanditMayhem::Maps::CORNER_UPPER_LEFT)
@@ -57,7 +55,6 @@ describe BanditMayhem::Map do
       end
 
       it 'left and right boundaries have vert walls' do
-        puts map
         y = map.split("\n")
 
         y.size.times do |x|
@@ -69,7 +66,6 @@ describe BanditMayhem::Map do
       end
 
       it 'top and bottom boundaries are horiz walls' do
-        puts map
         y = map.split("\n")
 
         top_row = y[0].chars
@@ -91,7 +87,6 @@ describe BanditMayhem::Map do
 
     context '4x4 smoke map fixture with pois' do
       it 'renders a door' do
-        # puts map
         expect(subject.get_entity_at(1, 1)).to include({ type: 'door' })
       end
 
@@ -109,10 +104,8 @@ describe BanditMayhem::Map do
     end
 
     context 'walls' do
-      let(:map) { subject.build!(character) }
-
       before(:each) do
-        puts map
+        subject.build!(character)
       end
 
       it 'renders a vert wall' do

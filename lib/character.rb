@@ -99,114 +99,63 @@ module BanditMayhem
       get_av('health').to_i <= 0
     end
 
-    # used for map detection. If the self collides with a market, for example.
-    def interact_with(item)
-      if is_a? BanditMayhem::Characters::Player
-        if item[:map] # passing in the location object
-          # interacting with a point on the map
-          item = @location[:map].get_entity_at item
-        end
-        return if item.nil?
-        case item['type']
-          when 'market'
-            market = BanditMayhem::Market.new item, self
-            while market.shopping
-              market.shop
-            end
-
-          when 'coinpurse'
-            puts 'you found a ' + 'coinpurse'.upcase.blue + ' with ' + item['value'].to_s.yellow + ' inside!'
-            loot(item)
-
-          when 'door', 'cave'
-            area = item['destination']['location']
-            @location[:map] = BanditMayhem::Map.new(area)
-            @location[:x] = item['destination']['x']
-            @location[:y] = item['destination']['y']
-
-          when 'item', 'weapon'
-            puts 'you found a ' + item['item'].to_s.upcase.blue + '!'
-            loot(item)
-
-          when 'bandit'
-            enemy_to_fight = nil
-            if !item['name']
-              require './lib/characters/bandit'
-              enemy_to_fight = BanditMayhem::Characters::Bandit.new
-            else
-              # do later (this is for greater foes)
-            end
-            battle(enemy_to_fight)
-        end
-      end
-      case item['type']
-        when 'wall', 'tree'
-          if has_item? BanditMayhem::Items::TraversingRing
-            @location[:map].remove_entity(@location)
-          else
-            warp(@location[:last])
-          end
-      end
-
-      if is_a? BanditMayhem::Characters::Player
-        @location[:map].render_map(self)
-      end
-    end
-
-    def warp(*args)
-      if args[0].is_a? Array
-        @location[:x], @location[:y] = args[0][0],args[0][1]
+    # Warp within a map
+    def warp(coords)
+      if coords.is_a? Array
+        @location[:x], @location[:y] = coords[0],coords[1]
       else
-        if args[0].is_a?(Integer) && args[1].is_a?(Integer)
-          # warp to x and y
-          @location[:x], @location[:y] = args[0].to_i, args[1].to_i
-        end
+        @location[:x] = coords[:x].to_i if coords[:x]
+        @location[:y] = coords[:y].to_i if coords[:y]
       end
+
+      @location[:last] = {x: @location[:x], y: @location[:y]}
     end
 
     # move the self
     def move(direction)
-      Game.cls
-      @location[:last] = [@location[:x], @location[:y]]
+      @location[:last] = {x: @location[:x], y: @location[:y]}.to_symbolized_hash
       case direction
         when 'up', 'w'
           if @location[:y] == 1
-            if @location[:map].north
-              @location[:map] = BanditMayhem::Map.new(@location[:map].north)
-              @location[:y] = @location[:map].height - 2
+            if @location[:map].attributes[:north]
+              @location[:map] = BanditMayhem::Map.new(@location[:map].attributes[:north])
+              @location[:y] = @location[:map].attributes[:height]
             else
               puts "can't go north!".red
+              warp(@location[:last])
             end
           else
             @location[:y] = @location[:y].to_i - 1
           end
         when 'down', 's'
-          if @location[:y] == @location[:map].height - 2
-            if @location[:map].south
-              @location[:map] = BanditMayhem::Map.new(@location[:map].south)
+          if @location[:y] == @location[:map].attributes[:height]
+            if @location[:map].attributes[:south]
+              @location[:map] = BanditMayhem::Map.new(@location[:map].attributes[:south])
               @location[:y] = 1
             else
               puts "can't go south!".red
+              warp(@location[:last])
             end
           else
             @location[:y] = @location[:y].to_i + 1
           end
         when 'left', 'a'
           if @location[:x] == 1
-            if @location[:map].west
-              @location[:map] = BanditMayhem::Map.new(@location[:map].west)
-              @location[:x] = @location[:map].width - 2
+            if @location[:map].attributes[:west]
+              @location[:map] = BanditMayhem::Map.new(@location[:map].attributes[:west])
+              @location[:x] = @location[:map].attributes[:width]
             else
               puts "can't go west!".red
+              warp(@location[:last])
             end
           else
             @location[:x] = @location[:x].to_i - 1
           end
         when 'right', 'd'
-          if @location[:x] == @location[:map].width - 2
-            if @location[:map].east
-              @location[:map] = BanditMayhem::Map.new(@location[:map].east)
-              @location[:x] = @location[:map].width - 2
+          if @location[:x] == @location[:map].attributes[:width]
+            if @location[:map].attributes[:east]
+              @location[:map] = BanditMayhem::Map.new(@location[:map].attributes[:east])
+              @location[:x] = @location[:map].attributes[:width]
             else
               puts "can't go east!".red
             end
@@ -214,7 +163,67 @@ module BanditMayhem
             @location[:x] = @location[:x].to_i + 1
           end
       end
-      interact_with @location
+
+      interact_with(@location)
+    end
+
+    # used for map detection. If the self collides with a market, for example.
+    def interact_with(location)
+      return if location.nil?
+
+      if location[:map] # passing in the location object
+        # interacting with a point on the map
+        entity = location[:map].get_entity_at(location)
+        # char = location[:map].get_char_at(location)
+      end
+
+      if entity
+        case entity['type']
+        when 'shop'
+          shop = BanditMayhem::Market.new entity, self
+          while shop.shopping
+            shop.shop
+          end
+        when 'coinpurse'
+          if is_a? BanditMayhem::Characters::Player
+            puts 'you found a ' + 'coinpurse'.upcase.blue + ' with ' + entity['value'].to_s.yellow + ' inside!'
+            loot(entity)
+          end
+        when 'door', 'cave'
+          area = entity['destination']['location']
+          @location[:map] = BanditMayhem::Map.new(area)
+          @location[:x] = entity['destination']['x']
+          @location[:y] = entity['destination']['y']
+        when 'item', 'weapon'
+          if is_a? BanditMayhem::Characters::Player
+            puts 'you found a ' + entity['item'].to_s.upcase.blue + '!'
+            loot(entity)
+          end
+        when 'bandit'
+          if is_a? BanditMayhem::Characters::Player
+            enemy_to_fight = nil
+            if !entity['name']
+              require './lib/characters/bandit'
+              enemy_to_fight = BanditMayhem::Characters::Bandit.new
+            else
+              # do later (this is for greater foes)
+            end
+
+            battle(enemy_to_fight)
+          end
+        end
+
+        case entity['type']
+        when 'wall', 'tree'
+          if @items.include? BanditMayhem::Items::TraversingRing
+            @location[:map].remove_entity(@location)
+          else
+            warp(@location[:last])
+          end
+        end
+      end
+
+      @location[:map].render_map(self)
     end
 
     # ==== MAIN BATTLE FUNC === #

@@ -9,7 +9,7 @@ south: lynwood_plains
 
 poi:
   -
-    type: market
+    type: shop
     x: 2
     y: 3
     inventory:

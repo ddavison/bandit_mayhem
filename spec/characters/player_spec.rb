@@ -7,7 +7,7 @@ describe BanditMayhem::Characters::Player do
     expect(subject.get_av('name')).to eq('Nigel')
   end
 
-  it 'starts in lynwood' do
+  it 'starts in Lynwood' do
     expect(subject.location[:map].to_s).to eq('Lynwood')
   end
 

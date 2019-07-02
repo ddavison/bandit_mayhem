@@ -16,7 +16,7 @@ poi:
       x: 8
       y: 5
   -
-    type: market
+    type: shop
     x: 6
     y: 1
     exits:
