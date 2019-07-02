@@ -176,14 +176,10 @@ module BanditMayhem
 
       @render
     end
-    # render the @render
-    # @param player - because we need the players position.
-    def render_map(player)
-      player.location[:x] = @attributes[:width] - 2 if player.location[:x] > @attributes[:width] - 2
-      player.location[:y] = @attributes[:height]- 2 if player.location[:y] > @attributes[:height] - 2
-
+    # draw the @render
+    # @param player because we need the players position in relation to the map
+    def draw_map(player)
       puts 'You are currently in ' + @attributes[:name].to_s.green
-
       puts build!(player)
     end
 

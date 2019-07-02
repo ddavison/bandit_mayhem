@@ -122,7 +122,6 @@ module BanditMayhem
               @location[:y] = @location[:map].attributes[:height]
             else
               puts "can't go north!".red
-              warp(@location[:last])
             end
           else
             @location[:y] = @location[:y].to_i - 1
@@ -134,7 +133,6 @@ module BanditMayhem
               @location[:y] = 1
             else
               puts "can't go south!".red
-              warp(@location[:last])
             end
           else
             @location[:y] = @location[:y].to_i + 1
@@ -146,7 +144,6 @@ module BanditMayhem
               @location[:x] = @location[:map].attributes[:width]
             else
               puts "can't go west!".red
-              warp(@location[:last])
             end
           else
             @location[:x] = @location[:x].to_i - 1
@@ -157,7 +154,7 @@ module BanditMayhem
               @location[:map] = BanditMayhem::Map.new(@location[:map].attributes[:east])
               @location[:x] = @location[:map].attributes[:width]
             else
-              puts "can't go east!".red
+              puts "can't go east!"
             end
           else
             @location[:x] = @location[:x].to_i + 1
@@ -223,7 +220,7 @@ module BanditMayhem
         end
       end
 
-      @location[:map].render_map(self)
+      @location[:map].draw_map(self)
     end
 
     # ==== MAIN BATTLE FUNC === #

@@ -140,7 +140,7 @@ module BanditMayhem
         end
       end
 
-      @player.location[:map].render_map(@player)
+      @player.location[:map].draw_map(@player)
       puts '-----' + @player.get_av('name').to_s.blue + '-----'
       puts @player.get_av('health').to_s.red + 'hp'
       puts '$' + @player.get_av('gold').to_s.yellow

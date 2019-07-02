@@ -201,29 +201,30 @@ describe BanditMayhem::Character do
       context 'boundaries' do
         context 'world boundaries' do
           context 'no adjacent world' do
+            let(:map) { BanditMayhem::Map.new(attributes: {height: 1, width: 1}) }
+
+            before(:each) { subject.warp(x: 1, y: 1) }
+
             it 'cant go left past boundary' do
-              subject.warp(x: 1)
+              puts map.build!(subject)
               subject.move('a')
 
               expect(subject.location[:x]).to eq(subject.location[:last][:x])
             end
 
             it 'cant go right past boundary' do
-              subject.warp(x: 5)
               subject.move('d')
 
               expect(subject.location[:x]).to eq(subject.location[:last][:x])
             end
 
             it 'cant go up past boundary' do
-              subject.warp(y: 1)
               subject.move('w')
 
               expect(subject.location[:y]).to eq(subject.location[:last][:y])
             end
 
             it 'cant go down past boundary' do
-              subject.warp(y: 5)
               subject.move('s')
 
               expect(subject.location[:y]).to eq(subject.location[:last][:y])
@@ -274,7 +275,10 @@ describe BanditMayhem::Character do
             expect(subject.location[:x]).to eq(subject.location[:last][:x])
           end
 
-          it 'cant go through a horiz wall using w/s'
+          it 'cant go through a horiz wall using w/s' do
+            subject.move('w')
+            expect(subject.location[:y]).to eq(subject.location[:last][:y])
+          end
         end
       end
     end
