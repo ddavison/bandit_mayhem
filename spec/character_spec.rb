@@ -145,7 +145,7 @@ describe BanditMayhem::Character do
   end
 
   describe 'movement' do
-    let(:map) { BanditMayhem::Map.new(name: 'test', attributes: { width: 5, height: 5 })}
+    let(:map) { BanditMayhem::Map.new(width: 5, height: 5) }
 
     context 'warping' do
       it 'saves the last location' do
@@ -201,7 +201,7 @@ describe BanditMayhem::Character do
       context 'boundaries' do
         context 'world boundaries' do
           context 'no adjacent world' do
-            let(:map) { BanditMayhem::Map.new(attributes: {height: 1, width: 1}) }
+            let(:map) { BanditMayhem::Map.new(height: 1, width: 1) }
 
             before(:each) { subject.warp(x: 1, y: 1) }
 

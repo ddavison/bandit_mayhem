@@ -15,10 +15,10 @@ describe BanditMayhem::Map do
       end
     end
 
-    context '[attrs]' do
-      subject { BanditMayhem::Map.new(name: 'qasmoke', attributes: {name: 'TestMap'}) }
+    context 'a hash object' do
+      subject { BanditMayhem::Map.new({name: 'TestMap'}) }
 
-      it 'loads when attributes are set' do
+      it 'loads when a hash is passed' do
         expect(subject.attributes).to include({ name: 'TestMap' })
       end
     end
@@ -34,7 +34,7 @@ describe BanditMayhem::Map do
 
   describe '#build!' do
     context '2x2 map' do
-      subject { BanditMayhem::Map.new(name: 'qasmoke', attributes: {width: 2, height: 2}) }
+      subject { BanditMayhem::Map.new({width: 2, height: 2}) }
 
       let(:map) { subject.build!(character) }
 
@@ -116,6 +116,18 @@ describe BanditMayhem::Map do
       it 'renders a horiz wall' do
         expect(subject.get_entity_at(x: 2, y: 2)).to include({ type: 'wall', direction: 'horiz'})
         expect(subject.get_char_at(x: 2, y: 2)).to eq(BanditMayhem::Maps::WALL_HORIZ)
+      end
+    end
+
+    context 'floor' do
+      let(:default_map) { BanditMayhem::Map.new({width: 1, height: 1}) }
+      let(:town_map) { BanditMayhem::Map.new({width: 1, height: 1, type: :town}) }
+      let(:grass_map) { BanditMayhem::Map.new({width: 1, height: 1, type: :grass}) }
+
+      it 'by default, renders spaces' do
+        default_map.build!(character)
+
+        expect(default_map.get_char_at(x: 1, y: 1)).to eq(" ")
       end
     end
   end

@@ -6,36 +6,31 @@ module BanditMayhem
   module Maps
     WALL_VERT          = '│'
     WALL_HORIZ         = '─'
-    DOOR               = '¤'.light_black
-    CAVE               = 'O'.light_black
+    DOOR               = '¤'.magenta
+    CAVE               = 'O'.magenta
     CORNER_UPPER_RIGHT = '┐'
     CORNER_UPPER_LEFT  = '┌'
     CORNER_LOWER_LEFT  = '└'
     CORNER_LOWER_RIGHT = '┘'
-    SURFACE_STONE      = '.'
-    SURFACE_GRASS      = ','
-    SHOP             = '$'.yellow
+    SURFACE_DEFAULT    = ' '
+    SURFACE_STONE      = '.'.light_black
+    SURFACE_GRASS      = ','.green
+    SHOP               = '$'.yellow
     PLAYER             = '@'.cyan
     COINPURSE          = '¢'.yellow
     ITEM               = '!'.blue
     BANDIT             = '■'.red
     OTHER              = '?'
-    TREE               = '∆'.green
+    TREE               = '∆'.light_green
   end
 
   class Map
 
     def to_s
-      @attributes['name']
+      @attributes[:name]
     end
 
     attr_reader :attributes,
-                :width,
-                :height,
-                :north,
-                :east,
-                :south,
-                :west,
                 :poi,
                 :render
 
@@ -48,8 +43,11 @@ module BanditMayhem
           @attributes.merge!(YAML.load_file(default_map_to_load)) if File.exists?(default_map_to_load)
           @attributes.merge!(YAML.load_file(File.expand_path("#{args}.yml"))) if File.exists?(File.expand_path("#{args}.yml"))
         elsif args.is_a? Hash
-          @attributes.merge!(YAML.load_file(File.expand_path(args[:file]))) if args[:file]
-          @attributes.merge!(args[:attributes]) if args[:attributes]
+          if args[:file]
+            @attributes.merge!(YAML.load_file(File.expand_path(args[:file])))
+          else
+            @attributes.merge!(args)
+          end
         end
       rescue => e
         puts e
@@ -237,7 +235,7 @@ module BanditMayhem
         when 'plains'
           Maps::SURFACE_GRASS
         else
-          Maps::SURFACE_GRASS
+          Maps::SURFACE_DEFAULT
       end
     end
   end
