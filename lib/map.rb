@@ -56,8 +56,8 @@ module BanditMayhem
       @width  = @attributes['width']
       @height = @attributes['height']
 
-      @boundary_width = @width.to_i * 2
-      @boundary_height = @height.to_i * 2
+      @boundary_width = @width.to_i + 2
+      @boundary_height = @height.to_i + 2
 
       @north = @attributes['north']
       @south = @attributes['south']
@@ -85,7 +85,7 @@ module BanditMayhem
               if y == 0
                 map += Maps::CORNER_UPPER_LEFT
                 next
-              elsif y == @boundary_height
+              elsif y == @boundary_height - 1
                 map += Maps::CORNER_LOWER_LEFT
                 next
               else
@@ -96,7 +96,7 @@ module BanditMayhem
               if y == 0
                 map += Maps::CORNER_UPPER_RIGHT
                 next
-              elsif y == @boundary_height
+              elsif y == @boundary_height - 1
                 map += Maps::CORNER_LOWER_RIGHT
                 next
               else
@@ -104,7 +104,7 @@ module BanditMayhem
                 next
               end
             else
-              if y == 0 || y == @boundary_width
+              if y == 0 || y == @boundary_height - 1
                 map += Maps::WALL_HORIZ
                 next
               end

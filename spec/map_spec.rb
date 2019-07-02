@@ -33,6 +33,8 @@ describe BanditMayhem::Map do
 
   describe '#build!' do
     context '2x2 map' do
+      subject { BanditMayhem::Map.new(name: 'qasmoke', attributes: {width: 2, height: 2}) }
+
       let(:map) { subject.build!(character) }
 
       it 'will render 4 characters total in width and height' do
@@ -58,7 +60,7 @@ describe BanditMayhem::Map do
         y = map.split("\n")
 
         y.size.times do |x|
-          if x != 0 || x == y.size # if it's not the boundary corner walls
+          if x != 0 && x == y.size # if it's not the boundary corner walls
             expect(y[x][0]).to eq(BanditMayhem::Maps::WALL_VERT)
             expect(y[x][-1]).to eq(BanditMayhem::Maps::WALL_VERT)
           end
@@ -73,13 +75,13 @@ describe BanditMayhem::Map do
         bottom_row = y[-1].chars
 
         top_row.size.times do |x|
-          if x != 0 && x == top_row.size - 1
+          if x != 0 && x == top_row.size
             expect(top_row[x]).to eq(BanditMayhem::Maps::WALL_HORIZ)
           end
         end
 
         bottom_row.size.times do |x|
-          if x != 0 || x == bottom_row.size
+          if x != 0 && x == bottom_row.size
             expect(bottom_row[x]).to eq(BanditMayhem::Maps::WALL_HORIZ)
           end
         end
