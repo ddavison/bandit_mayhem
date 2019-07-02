@@ -1,10 +1,13 @@
 ---
+image: ruby:2.6.3
 
 stages: 
 - sanity
 - test
 - package
 
+before_script:
+- bundle install
 
 map-validation:
   stage: sanity
