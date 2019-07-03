@@ -66,6 +66,8 @@ module BanditMayhem
     end
 
     def build!(player)
+      raise 'cannot generate an empty map' unless (@attributes[:width] && @attributes[:height])
+
       # the @render string
       @render = String.new
       map_surface = get_surface

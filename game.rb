@@ -140,6 +140,7 @@ module BanditMayhem
         end
       end
 
+      Game.cls
       @player.location[:map].draw_map(@player)
       puts '-----' + @player.get_av('name').to_s.blue + '-----'
       puts @player.get_av('health').to_s.red + 'hp'
@@ -147,7 +148,6 @@ module BanditMayhem
       puts 'Weapon: ' + @player.weapon.get_property('name').to_s.green if @player.weapon
       puts ''
       puts "Enter a command (type #{'/help'.magenta} for commands) (#{'w'.magenta},#{'a'.magenta},#{'s'.magenta},#{'d'.magenta} to move)"
-      STDOUT.flush
 
       cmd = gets.chomp
       # cmd = '/save test'

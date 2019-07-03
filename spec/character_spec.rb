@@ -148,6 +148,10 @@ describe BanditMayhem::Character do
     let(:map) { BanditMayhem::Map.new(width: 5, height: 5) }
 
     context 'warping' do
+      before(:each) do
+        subject.location[:map] = map
+      end
+
       it 'saves the last location' do
         expect(subject.location).to include({x: -1, y: -1})
         expect(subject.location[:last]).to be_nil
@@ -232,7 +236,7 @@ describe BanditMayhem::Character do
           end
 
           context 'adjacent world' do
-            let(:map) { BanditMayhem::Map.new(name: 'map', file: File.absolute_path(File.join('spec', 'fixtures', 'map_with_borders.yml'))) }
+            let(:map) { BanditMayhem::Map.new(file: File.absolute_path(File.join('spec', 'fixtures', 'maps', 'with_borders.yml'))) }
 
             before(:each) { subject.warp(x: 1, y: 1) }
 
@@ -263,7 +267,7 @@ describe BanditMayhem::Character do
         end
 
         context 'walls' do
-          let(:map) { BanditMayhem::Map.new(file: File.absolute_path(File.join('spec', 'fixtures', 'map_jail.yml'))) }
+          let(:map) { BanditMayhem::Map.new(file: File.absolute_path(File.join('spec', 'fixtures', 'maps', 'jail.yml'))) }
 
           before(:each) do
             subject.warp(x: 2, y: 2)
@@ -280,6 +284,25 @@ describe BanditMayhem::Character do
             expect(subject.location[:y]).to eq(subject.location[:last][:y])
           end
         end
+      end
+    end
+
+    describe '#interact_with' do
+      let(:map) { BanditMayhem::Map.new(file: File.absolute_path(File.join('spec', 'fixtures', 'maps', 'qasmoke.yml'))) }
+
+      before(:each) { subject.location[:map] = map }
+
+      it 'can interact with a door' do
+        subject.warp(x: 1, y: 1)
+
+        expect(subject.location[:map].attributes[:name]).to eq('QA Smoke Door Room')
+      end
+
+      it 'can loot a coinpurse' do
+        expect(subject.get_av('gold', 0)).to eq(0)
+
+        subject.warp(x: 2, y: 1)
+        expect(subject.get_av('gold')).to eq(10)
       end
     end
   end

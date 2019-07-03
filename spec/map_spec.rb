@@ -3,7 +3,7 @@ require 'character'
 require 'colorize'
 
 describe BanditMayhem::Map do
-  subject { BanditMayhem::Map.new(name: 'qasmoke', file: File.absolute_path(File.join('spec', 'fixtures', 'map_qasmoke.yml'))) }
+  subject { BanditMayhem::Map.new(file: File.absolute_path(File.join('spec', 'fixtures', 'maps', 'qasmoke.yml'))) }
   let(:character) { BanditMayhem::Character.new }
 
   context 'initialization' do
@@ -16,7 +16,7 @@ describe BanditMayhem::Map do
     end
 
     context 'a hash object' do
-      subject { BanditMayhem::Map.new({name: 'TestMap'}) }
+      subject { BanditMayhem::Map.new(name: 'TestMap') }
 
       it 'loads when a hash is passed' do
         expect(subject.attributes).to include({ name: 'TestMap' })
@@ -24,7 +24,7 @@ describe BanditMayhem::Map do
     end
 
     context '[file]' do
-      subject { BanditMayhem::Map.new(name: 'qasmoke', file: File.absolute_path(File.join('spec', 'fixtures', 'map_qasmoke.yml'))) }
+      subject { BanditMayhem::Map.new(file: File.absolute_path(File.join('spec', 'fixtures', 'maps', 'qasmoke.yml'))) }
 
       it 'loads a specific map' do
         expect(subject.attributes).to include({ name: 'QA Smoke' })
@@ -34,7 +34,7 @@ describe BanditMayhem::Map do
 
   describe '#build!' do
     context '2x2 map' do
-      subject { BanditMayhem::Map.new({width: 2, height: 2}) }
+      subject { BanditMayhem::Map.new(width: 2, height: 2) }
 
       let(:map) { subject.build!(character) }
 
@@ -120,9 +120,9 @@ describe BanditMayhem::Map do
     end
 
     context 'floor' do
-      let(:default_map) { BanditMayhem::Map.new({width: 1, height: 1}) }
-      let(:town_map) { BanditMayhem::Map.new({width: 1, height: 1, type: :town}) }
-      let(:grass_map) { BanditMayhem::Map.new({width: 1, height: 1, type: :grass}) }
+      let(:default_map) { BanditMayhem::Map.new(width: 1, height: 1) }
+      let(:town_map) { BanditMayhem::Map.new(width: 1, height: 1, type: :town) }
+      let(:grass_map) { BanditMayhem::Map.new(width: 1, height: 1, type: :grass) }
 
       it 'by default, renders spaces' do
         default_map.build!(character)

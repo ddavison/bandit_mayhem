@@ -109,6 +109,8 @@ module BanditMayhem
       end
 
       @location[:last] = {x: @location[:x], y: @location[:y]}
+
+      interact_with(@location)
     end
 
     # move the self
@@ -182,32 +184,26 @@ module BanditMayhem
             shop.shop
           end
         when 'coinpurse'
-          if is_a? BanditMayhem::Characters::Player
-            puts 'you found a ' + 'coinpurse'.upcase.blue + ' with ' + entity['value'].to_s.yellow + ' inside!'
-            loot(entity)
-          end
+          puts 'you found a ' + 'coinpurse'.upcase.blue + ' with ' + entity['value'].to_s.yellow + ' inside!'
+          loot(entity)
         when 'door', 'cave'
           area = entity['destination']['location']
           @location[:map] = BanditMayhem::Map.new(area)
           @location[:x] = entity['destination']['x']
           @location[:y] = entity['destination']['y']
         when 'item', 'weapon'
-          if is_a? BanditMayhem::Characters::Player
-            puts 'you found a ' + entity['item'].to_s.upcase.blue + '!'
-            loot(entity)
-          end
+          puts 'you found a ' + entity['item'].to_s.upcase.blue + '!'
+          loot(entity)
         when 'bandit'
-          if is_a? BanditMayhem::Characters::Player
-            enemy_to_fight = nil
-            if !entity['name']
-              require './lib/characters/bandit'
-              enemy_to_fight = BanditMayhem::Characters::Bandit.new
-            else
-              # do later (this is for greater foes)
-            end
-
-            battle(enemy_to_fight)
+          enemy_to_fight = nil
+          if !entity['name']
+            require 'characters/bandit'
+            enemy_to_fight = BanditMayhem::Characters::Bandit.new
+          else
+            # do later (this is for greater foes)
           end
+
+          battle(enemy_to_fight)
         end
 
         case entity['type']

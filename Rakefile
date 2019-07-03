@@ -28,7 +28,7 @@ namespace :maps do
     require 'character'
 
     char = BanditMayhem::Character.new
-    puts BanditMayhem::Map.new({name: 'generated', attributes: {width: args[:x], height: args[:y]}}).build!(char)
+    puts BanditMayhem::Map.new(width: args[:x], height: args[:y]).build!(char)
   end
 
 end

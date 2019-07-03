@@ -1,6 +1,0 @@
----
-name: west_map
-width: 1
-height: 1
-
-east: spec/fixtures/map_with_borders

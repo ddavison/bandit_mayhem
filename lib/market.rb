@@ -15,7 +15,7 @@ module BanditMayhem
           '/sell [ItemName]' => 'Sell an item from your inventory'
         }
         @player = rec.player
-        @market = rec.market
+        @market = rec.shop
       end
 
       def exit(args)
@@ -54,14 +54,14 @@ module BanditMayhem
 
     attr_accessor :shopping,
                   :player,
-                  :market
+                  :shop
 
-    def initialize(market, player)
+    def initialize(shop, player)
       puts <<-END
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
       END
 
-      @market = market
+      @shop = shop
       @player = player
       @shopping = true
       @command_proc = Commands.new(self)
@@ -85,7 +85,7 @@ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
       Dir['./lib/weapons/*'].each { |file| require file }
 
       item_number = 1
-      @market['inventory'].each do |item|
+      @shop['inventory'].each do |item|
         begin
           itm = BanditMayhem::Item.by_name(item)
         rescue

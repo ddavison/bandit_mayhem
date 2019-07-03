@@ -5,11 +5,16 @@ height: 10
 
 poi:
   - type: door
+    destination:
+      location: spec/fixtures/maps/qasmoke_door
+      x: 1
+      y: 1
     x: 1
     y: 1
   - type: coinpurse
     x: 2
     y: 1
+    value: 10
   - type: shop
     x: 3
     y: 1
