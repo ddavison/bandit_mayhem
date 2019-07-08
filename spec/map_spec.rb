@@ -33,32 +33,30 @@ describe BanditMayhem::Map do
   end
 
   describe '#build!' do
+    before(:each) do
+      subject.build!(character)
+    end
+
     context '2x2 map' do
       subject { BanditMayhem::Map.new(width: 2, height: 2) }
 
-      let(:map) { subject.build!(character) }
+      let(:map) { subject.matrix }
 
       it 'will render 4 characters total in width and height' do
-        m = subject.build!(character).split("\n")
-
-        expect(m.size).to eq(4) # total level
+        expect(map.size).to eq(4) # total level
       end
 
       it 'has corner bends' do
-        map_lines = map.split("\n")
+        expect(map.first[0]).to eq(BanditMayhem::Maps::CORNER_UPPER_LEFT)
+        expect(map.first[-1]).to eq(BanditMayhem::Maps::CORNER_UPPER_RIGHT)
 
-        expect(map_lines.first[0]).to eq(BanditMayhem::Maps::CORNER_UPPER_LEFT)
-        expect(map_lines.first[-1]).to eq(BanditMayhem::Maps::CORNER_UPPER_RIGHT)
-
-        expect(map_lines.last[0]).to eq(BanditMayhem::Maps::CORNER_LOWER_LEFT)
-        expect(map_lines.last[-1]).to eq(BanditMayhem::Maps::CORNER_LOWER_RIGHT)
+        expect(map.last[0]).to eq(BanditMayhem::Maps::CORNER_LOWER_LEFT)
+        expect(map.last[-1]).to eq(BanditMayhem::Maps::CORNER_LOWER_RIGHT)
       end
 
       it 'left and right boundaries have vert walls' do
-        y = map.split("\n")
-
-        y.size.times do |x|
-          if x != 0 && x == y.size # if it's not the boundary corner walls
+        map.size.times do |x|
+          if x != 0 && x == map.size # if it's not the boundary corner walls
             expect(y[x][0]).to eq(BanditMayhem::Maps::WALL_VERT)
             expect(y[x][-1]).to eq(BanditMayhem::Maps::WALL_VERT)
           end
@@ -66,10 +64,8 @@ describe BanditMayhem::Map do
       end
 
       it 'top and bottom boundaries are horiz walls' do
-        y = map.split("\n")
-
-        top_row = y[0].chars
-        bottom_row = y[-1].chars
+        top_row = map[0]
+        bottom_row = map[-1]
 
         top_row.size.times do |x|
           if x != 0 && x == top_row.size
@@ -86,6 +82,10 @@ describe BanditMayhem::Map do
     end
 
     context '4x4 smoke map fixture with pois' do
+      before(:each) do
+        subject.build!(character)
+      end
+
       it 'renders a door' do
         expect(subject.get_entity_at(x: 1, y: 1)).to include({ type: 'door' })
       end
@@ -104,8 +104,8 @@ describe BanditMayhem::Map do
     end
 
     context 'walls' do
-      before(:each) do
-        subject.build!(character)
+      after(:each) do
+        puts subject.render(character)
       end
 
       it 'renders a vert wall' do
@@ -116,6 +116,18 @@ describe BanditMayhem::Map do
       it 'renders a horiz wall' do
         expect(subject.get_entity_at(x: 2, y: 2)).to include({ type: 'wall', direction: 'horiz'})
         expect(subject.get_char_at(x: 2, y: 2)).to eq(BanditMayhem::Maps::WALL_HORIZ)
+      end
+
+      context 'interiors' do
+        let(:map) { subject.matrix }
+
+        context 'boundaries' do
+          it 'draws an interior' do
+            expect(map[3][5]).to eq(BanditMayhem::Maps::INTERIOR_CORNER_UPPER_LEFT)
+            expect(map[3][6]).to eq(BanditMayhem::Maps::INTERIOR_WALL_HORIZ)
+          end
+        end
+        context 'door'
       end
     end
 

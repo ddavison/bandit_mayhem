@@ -6,12 +6,20 @@ module BanditMayhem
   module Maps
     WALL_VERT          = '│'
     WALL_HORIZ         = '─'
-    DOOR               = '¤'.magenta
-    CAVE               = 'O'.magenta
     CORNER_UPPER_RIGHT = '┐'
     CORNER_UPPER_LEFT  = '┌'
     CORNER_LOWER_LEFT  = '└'
     CORNER_LOWER_RIGHT = '┘'
+
+    INTERIOR_WALL_VERT          = '║'
+    INTERIOR_WALL_HORIZ         = '═'
+    INTERIOR_CORNER_UPPER_RIGHT = '╗'
+    INTERIOR_CORNER_UPPER_LEFT  = '╔'
+    INTERIOR_CORNER_LOWER_LEFT  = '╚'
+    INTERIOR_CORNER_LOWER_RIGHT = '╝'
+
+    DOOR               = '¤'.magenta
+    CAVE               = 'O'.magenta
     SURFACE_DEFAULT    = ' '
     SURFACE_STONE      = '.'.light_black
     SURFACE_GRASS      = ','.green
@@ -32,8 +40,9 @@ module BanditMayhem
     end
 
     attr_reader :attributes,
-                :poi,
-                :render
+                :poi
+
+    attr_accessor :matrix
 
     def initialize(args)
       @attributes = {}.to_symbolized_hash
@@ -63,53 +72,65 @@ module BanditMayhem
 
       @locations = []
 
-      @poi = @attributes['poi']
+      @matrix = [[]]
+
+      @poi = @attributes['poi'] || []
     end
 
     def build!(player)
       raise 'cannot generate an empty map' unless (@attributes[:width] && @attributes[:height])
 
       # the @render string
-      @render = String.new
       map_surface = get_surface
 
-      @boundary_height.times do |y|  # columns
-        @boundary_width.times do |x| # rows
+      @boundary_height.times do |y|
+        @matrix[y] = []
+        @boundary_width.times do |x|
           non_surface = false
           case x
             when 0
               if y == 0
-                @render += Maps::CORNER_UPPER_LEFT
+                @matrix[y][x] = Maps::CORNER_UPPER_LEFT
+
                 next
               elsif y == @boundary_height - 1
-                @render += Maps::CORNER_LOWER_LEFT
+                @matrix[y][x] = Maps::CORNER_LOWER_LEFT
+
                 next
               else
-                @render += Maps::WALL_VERT
+                @matrix[y][x] = Maps::WALL_VERT
+
                 next
               end
             when @boundary_width - 1
               if y == 0
-                @render += Maps::CORNER_UPPER_RIGHT
+                @matrix[y][x] = Maps::CORNER_UPPER_RIGHT
+
                 next
               elsif y == @boundary_height - 1
-                @render += Maps::CORNER_LOWER_RIGHT
+                @matrix[y][x] = Maps::CORNER_LOWER_RIGHT
+
                 next
               else
-                @render += Maps::WALL_VERT
+                @matrix[y][x] = Maps::WALL_VERT
+
                 next
               end
             else
               if y == 0 || y == @boundary_height - 1
-                @render += Maps::WALL_HORIZ
+                @matrix[y][x] = Maps::WALL_HORIZ
+
                 next
               end
 
               if x == player.location[:x] && y == player.location[:y]
-                @render += Maps::PLAYER
+                @matrix[y][x] = Maps::PLAYER
                 non_surface = true
+
                 next
               end
+
+              @matrix[y][x] = map_surface
 
               if @poi&.any?
                 @poi.each do |poi|
@@ -132,56 +153,85 @@ module BanditMayhem
                   if x == poi['x'] && y == poi['y']
                     case poi['type']
                       when 'shop'
-                        @render += Maps::SHOP
+                        @matrix[y][x] = Maps::SHOP
+
                         non_surface = true
                       when 'coinpurse'
-                        @render += Maps::COINPURSE
+                        @matrix[y][x] = Maps::COINPURSE
+
                         non_surface = true
                       when 'item', 'weapon'
-                        @render += Maps::ITEM
+                        @matrix[y][x] = Maps::ITEM
+
                         non_surface = true
                       when 'bandit'
-                        @render += Maps::BANDIT
+                        @matrix[y][x] = Maps::BANDIT
+
                         non_surface = true
                       when 'tree'
-                        @render += Maps::TREE
+                        @matrix[y][x] = Maps::TREE
+
                         non_surface = true
                       when 'cave'
-                        @render += Maps::CAVE
+                        @matrix[y][x] = Maps::CAVE
+
                         non_surface = true
                       when 'door'
-                        @render += Maps::DOOR
+                        @matrix[y][x] = Maps::DOOR
+
                         non_surface = true
                       when 'wall'
                         non_surface = true
                         case poi['direction']
                           when 'vertical', 'vert'
-                            @render += Maps::WALL_VERT
-                          when 'horizontal', 'horiz'
-                            @render += Maps::WALL_HORIZ
+                            @matrix[y][x] = Maps::WALL_VERT
+
+                        when 'horizontal', 'horiz'
+                            @matrix[y][x] = Maps::WALL_HORIZ
                         end
                       else
-                        @render += Maps::OTHER
+                        @matrix[y][x] = Maps::OTHER
+
                         non_surface = true
                     end
                     next
                   end
                 end
               end
-              @render += map_surface unless non_surface
           end
           non_surface = false
         end
-        @render += "\n"
+
       end
 
-      @render
+      draw_interiors!
     end
+
+    def built?
+      @matrix&.first&.any?
+    end
+
+    def render(player)
+      map = String.new
+
+      @matrix.each do |line|
+        map += line.join('')
+        map += "\n"
+      end
+
+      map
+    end
+
     # draw the @render
     # @param player because we need the players position in relation to the map
     def draw_map(player)
       puts 'You are currently in ' + @attributes[:name].to_s.green
-      puts build!(player)
+
+      # build the map
+      build!(player)
+
+      # render the map
+      puts render(player)
     end
 
     # exit a location
@@ -215,10 +265,70 @@ module BanditMayhem
 
     def get_char_at(location)
       raise 'need x and y coordinates' unless location[:x]&.is_a? Numeric and location[:y]&.is_a? Numeric
-      raise 'map needs built first' unless @render
+      raise 'map needs built first' unless built?
 
-      @render_lines ||= @render.split("\n")
-      @render_lines[location[:y]][location[:x]]
+      @matrix[location[:y]][location[:x]]
+    end
+
+    private
+
+    def draw_interiors!
+      if built?
+        if attributes[:interiors]&.any?
+          attributes[:interiors].each do |interior|
+            interior_width = interior[:width] + 2
+            interior_height = interior[:height] + 2
+
+            interior_height.times do |y|
+                _y = interior[:y] + y
+              interior_width.times do |x|
+                _x = interior[:x] + x
+
+                if interior[:door]
+                  next if x == (interior[:door][:x] - 1) && y == (interior[:door][:y] - 1)
+                end
+
+                case _x
+                when interior[:x]
+                  if _y == interior[:y]
+                    @matrix[_y][_x] = Maps::INTERIOR_CORNER_UPPER_LEFT
+
+                    next
+                  elsif _y == (interior[:y] + interior_height - 1)
+                    @matrix[_y][_x] = Maps::INTERIOR_CORNER_LOWER_LEFT
+
+                    next
+                  else
+                    @matrix[_y][_x] = Maps::INTERIOR_WALL_VERT
+
+                    next
+                  end
+                when (interior[:x] + interior_width - 1)
+                  if _y == interior[:y]
+                    @matrix[_y][_x] = Maps::INTERIOR_CORNER_UPPER_RIGHT
+
+                    next
+                  elsif _y == (interior[:y] + interior_height - 1)
+                    @matrix[_y][_x] = Maps::INTERIOR_CORNER_LOWER_RIGHT
+
+                    next
+                  else
+                    @matrix[_y][_x] = Maps::INTERIOR_WALL_VERT
+                  end
+                else
+                  # if y == interior[:y] || y == interior[:height] - 1
+                  if _y == interior[:y] || _y == (interior[:y] + interior_height - 1)
+                    @matrix[_y][_x] = Maps::INTERIOR_WALL_HORIZ
+
+                    next
+                  end
+
+                end
+              end
+            end
+          end
+        end
+      end
     end
 
     def remove_entity(*args)

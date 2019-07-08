@@ -1,6 +1,6 @@
 ---
 name: QA Smoke
-width: 10
+width: 50
 height: 10
 
 poi:
@@ -31,3 +31,12 @@ poi:
     direction: horiz
     x: 2
     y: 2
+
+interiors:
+  - width: 4
+    height: 3
+    x: 5
+    y: 3
+    door: # door on left side, "middle".
+      x: 1
+      y: 2
