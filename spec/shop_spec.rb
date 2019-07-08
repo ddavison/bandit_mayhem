@@ -15,12 +15,18 @@ describe BanditMayhem::Shop do
       character.set_av('gold', 100)
     end
 
-    xit 'can buy an item' do
-      expect(subject.inventory.size).to eq(1)
+    context 'can buy an item' do
+      it 'by name' do
+        expect(subject.inventory.size).to eq(1)
 
-      subject.buy!('HealthPotion')
+        expect(subject.buy!('HealthPotion')).to be_a(BanditMayhem::Items::HealthPotion)
+      end
 
-      expect(subject.inventory.size).to eq(0)
+      it 'by index' do
+        expect(subject.inventory.size).to eq(1)
+
+        expect(subject.buy!(0)).to be_a(BanditMayhem::Items::HealthPotion)
+      end
     end
   end
 end

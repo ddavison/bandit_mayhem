@@ -25,30 +25,32 @@ module BanditMayhem
       end
 
       def buy(args)
-        if Integer(args.first)
-          item_index = args.first.to_i - 1
-          begin
-            itm = BanditMayhem::Item.by_name(@shop['inventory'][item_index])
-          rescue
-            itm = BanditMayhem::Weapon.by_name(@shop['inventory'][item_index])
-          end
-
-          buy_value = itm.attributes[:buy_value]
-
-          if @player.get_av('gold').to_i < buy_value
-            puts 'You cant afford that!'.red
-          else
-            @player.give(itm)
-            @player.set_av('gold',
-              @player.get_av('gold').to_i - buy_value
-            )
-          end
-        else
-          puts "you can't buy #{args}. try again using the item code: /buy 1".red
-        end
+        # TODO: buy logic from IN-GAME
+        # if Integer(args.first)
+        #   item_index = args.first.to_i - 1
+        #   begin
+        #     itm = BanditMayhem::Item.by_name(@shop['inventory'][item_index])
+        #   rescue
+        #     itm = BanditMayhem::Weapon.by_name(@shop['inventory'][item_index])
+        #   end
+        #
+        #   buy_value = itm.attributes[:buy_value]
+        #
+        #   if @player.get_av('gold').to_i < buy_value
+        #     puts 'You cant afford that!'.red
+        #   else
+        #     @player.give(itm)
+        #     @player.set_av('gold',
+        #       @player.get_av('gold').to_i - buy_value
+        #     )
+        #   end
+        # else
+        #   puts "you can't buy #{args}. try again using the item code: /buy 1".red
+        # end
       end
 
       def sell(args)
+        # TODO: implement shop selling
         puts 'not implemented'.red
       end
     end
@@ -80,28 +82,30 @@ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$#{"   #{@shop[:name]}   " if @shop[:name] }$$$$$$$$
       print_inventory
       puts '----------------------------------'
 
-      cmd = gets.chomp
-
-      @command_proc.execute(cmd)
+      if Utils.in_game?
+        cmd = gets.chomp
+        @command_proc&.execute(cmd)
+      end
     end
 
+    # return the ::Item instance. no calculations are done here
     def buy!(index_or_name)
       if index_or_name.is_a? Integer
         item_index = index_or_name.to_i - 1
+
         begin
-          item = BanditMayhem::Item.by_name(@shop['inventory'][item_index])
+          item = BanditMayhem::Item.by_name(@shop[:inventory][item_index])
         rescue
-          item = BanditMayhem::Weapon.by_name(@shop['inventory'][item_index])
+          item = BanditMayhem::Weapon.by_name(@shop[:inventory][item_index])
         end
+
       elsif index_or_name.is_a? Array
         index_or_name.each {|a| buy!(a) }
       elsif index_or_name.is_a? String
         item = BanditMayhem::Item.by_name(index_or_name)
       end
 
-      buy_value = item.attributes[:buy_value]
-
-
+      item
     end
 
     def print_inventory
@@ -109,7 +113,7 @@ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$#{"   #{@shop[:name]}   " if @shop[:name] }$$$$$$$$
       Dir['./lib/weapons/*'].each { |file| require file }
 
       item_number = 1
-      @inventory.each do |item|
+      @inventory.uniq.each do |item|
         begin
           itm = BanditMayhem::Item.by_name(item)
         rescue

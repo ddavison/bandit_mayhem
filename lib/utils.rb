@@ -14,6 +14,10 @@ module BanditMayhem
       end
     end
 
+    def in_game?
+      !ARGV[0]&.to_s.end_with?('spec')
+    end
+
     class Printer
 
       def info(msg)
