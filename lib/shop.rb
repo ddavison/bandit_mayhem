@@ -1,11 +1,12 @@
 require 'colorize'
+require 'symbolized'
 
 require 'commands'
 require 'item'
 require 'weapon'
 
 module BanditMayhem
-  class Market
+  class Shop
     class Commands < BanditMayhem::Commands
       def initialize(rec)
         @rec = rec
@@ -15,7 +16,7 @@ module BanditMayhem
           '/sell [ItemName]' => 'Sell an item from your inventory'
         }
         @player = rec.player
-        @market = rec.shop
+        @shop = rec.shop
       end
 
       def exit(args)
@@ -27,12 +28,12 @@ module BanditMayhem
         if Integer(args.first)
           item_index = args.first.to_i - 1
           begin
-            itm = BanditMayhem::Item.by_name(@market['inventory'][item_index])
+            itm = BanditMayhem::Item.by_name(@shop['inventory'][item_index])
           rescue
-            itm = BanditMayhem::Weapon.by_name(@market['inventory'][item_index])
+            itm = BanditMayhem::Weapon.by_name(@shop['inventory'][item_index])
           end
 
-          buy_value = itm.get_property('buy_value')
+          buy_value = itm.attributes[:buy_value]
 
           if @player.get_av('gold').to_i < buy_value
             puts 'You cant afford that!'.red
@@ -56,28 +57,51 @@ module BanditMayhem
                   :player,
                   :shop
 
-    def initialize(shop, player)
-      puts <<-END
-$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-      END
+    attr_reader :inventory
 
-      @shop = shop
+    def initialize(shop={}, player)
+      @shop = shop.to_symbolized_hash
+      @inventory = @shop[:inventory]
       @player = player
       @shopping = true
       @command_proc = Commands.new(self)
     end
 
     def shop
+      Utils.cls
+
+      puts <<-END
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$#{"   #{@shop[:name]}   " if @shop[:name] }$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+      END
+
       puts
       puts 'You have ' + '$'.yellow + @player.get_av('gold').to_s.yellow + ' - Buy an item using ' + '/buy'.magenta + '. Sell an item using ' + '/sell'.magenta + '. Leave using ' + '/exit'.magenta
       puts '------------Inventory-------------'
       print_inventory
       puts '----------------------------------'
 
-      STDOUT.flush
       cmd = gets.chomp
 
       @command_proc.execute(cmd)
+    end
+
+    def buy!(index_or_name)
+      if index_or_name.is_a? Integer
+        item_index = index_or_name.to_i - 1
+        begin
+          item = BanditMayhem::Item.by_name(@shop['inventory'][item_index])
+        rescue
+          item = BanditMayhem::Weapon.by_name(@shop['inventory'][item_index])
+        end
+      elsif index_or_name.is_a? Array
+        index_or_name.each {|a| buy!(a) }
+      elsif index_or_name.is_a? String
+        item = BanditMayhem::Item.by_name(index_or_name)
+      end
+
+      buy_value = item.attributes[:buy_value]
+
+
     end
 
     def print_inventory
@@ -85,14 +109,14 @@ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
       Dir['./lib/weapons/*'].each { |file| require file }
 
       item_number = 1
-      @shop['inventory'].each do |item|
+      @inventory.each do |item|
         begin
           itm = BanditMayhem::Item.by_name(item)
         rescue
           p item
           itm = BanditMayhem::Weapon.by_name(item)
         end
-        puts item_number.to_s + '. ' + "[$#{itm.get_property('buy_value')}]".to_s.yellow + " #{itm.get_property('name')}".to_s.green + " (#{itm.get_property('description')})".to_s.blue
+        puts item_number.to_s + '. ' + "[$#{itm.attributes[:buy_value]}]".to_s.yellow + " #{itm.attributes[:name]}".to_s.green + " (#{itm.attributes[:description]})".to_s.blue
         item_number += 1
       end
     end

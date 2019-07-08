@@ -13,7 +13,7 @@ class Map extends Tool
   CORNER_LOWER_RIGHT : '┘'
   town               : '.'
   plains             : ','
-  market             : '$'
+  shop               : '$'
   coinpurse          : '¢'
   item               : '!'
   bandit             : '■'
@@ -26,7 +26,7 @@ class Map extends Tool
     height: 'int'
     type: ['town', 'plains', 'shop', 'cave']
     poi: [
-      type: ['market', 'coinpurse', 'tree', 'weapon', 'bandit']
+      type: ['shop', 'coinpurse', 'tree', 'weapon', 'bandit']
       x: 'int'
       y: 'int'
       value: 'int'

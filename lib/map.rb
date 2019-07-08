@@ -22,6 +22,7 @@ module BanditMayhem
     BANDIT             = '■'.red
     OTHER              = '?'
     TREE               = '∆'.light_green
+    NPC                = '∙'.cyan
   end
 
   class Map

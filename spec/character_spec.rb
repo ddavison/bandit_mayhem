@@ -295,7 +295,7 @@ describe BanditMayhem::Character do
       it 'can interact with a door' do
         subject.warp(x: 1, y: 1)
 
-        expect(subject.location[:map].attributes[:name]).to eq('QA Smoke Door Room')
+        expect(subject.location[:map].to_s).to eq('QA Smoke Door Room')
       end
 
       it 'can loot a coinpurse' do

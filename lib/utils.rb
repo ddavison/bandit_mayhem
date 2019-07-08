@@ -6,6 +6,14 @@ module BanditMayhem
       rand(100) <= percent
     end
 
+    def cls
+      if RUBY_PLATFORM =~ /win32|win64|\.NET|windows|cygwin|mingw32/i
+        system('cls')
+      else
+        system('clear')
+      end
+    end
+
     class Printer
 
       def info(msg)

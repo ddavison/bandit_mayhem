@@ -1,14 +1,20 @@
-app = require('app')
-BrowserWindow = require('browser-window')
+BrowserWindow = require('electron')
+Editor = require('./js/editor')
 
 require('crash-reporter').start()
 
 mainWindow = null
 
 app.on('ready', ->
-  mainWindow = new BrowserWindow({width: 1024, height: 768})
+  mainWindow = new BrowserWindow({
+    width: 1024,
+    height: 768,
+    webPreferences: {
+      nodeIntegration: true
+    }
+  })
 
-  mainWindow.loadUrl("file://#{__dirname}/index.html")
+  mainWindow.loadFile("index.html")
 
   mainWindow.webContents.openDevTools()
 

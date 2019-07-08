@@ -29,7 +29,7 @@ module BanditMayhem
 
         @descriptions << {
           '/test_fight [bandit]' => 'Fight an enemy. Defaults to a Bandit',
-          '/test_market' => 'Visit the market to buy supplies.'
+          '/test_shop' => 'Visit the shop to buy supplies.'
         } if @game.devmode
       end
 
@@ -51,6 +51,7 @@ module BanditMayhem
 
       def save_game(args)
         save_name = args.first.to_s
+        save_name = 'savegame' if save_name == ''
 
         _loc = @game.player.location
 
@@ -102,20 +103,12 @@ module BanditMayhem
 
       @quit = false
 
-      Game.cls
+      Utils.cls
     end
 
     # This is the main game loop.
     def main
       update
-    end
-
-    def self.cls
-      if RUBY_PLATFORM =~ /win32|win64|\.NET|windows|cygwin|mingw32/i
-        system('cls')
-      else
-        system('clear')
-      end
     end
 
     def self.media_player=(media_player)
@@ -133,14 +126,14 @@ module BanditMayhem
       # show health
       if @settings.get('music', true)
         unless Game.media_player.playing?
-          unless Game.media_player.playing_level? @player.location[:map].attributes['name']
+          unless Game.media_player.playing_level? @player.location[:map].to_s
             # start playing the map track unless it's already playing
-            Game.media_player.play_level_song(@player.location[:map].attributes['name'])
+            Game.media_player.play_level_song(@player.location[:map].to_s)
           end
         end
       end
 
-      Game.cls
+      # Utils.cls
       @player.location[:map].draw_map(@player)
       puts '-----' + @player.get_av('name').to_s.blue + '-----'
       puts @player.get_av('health').to_s.red + 'hp'

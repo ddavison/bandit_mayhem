@@ -13,17 +13,17 @@
   },
   "homepage": "https://github.com/ddavison/bandit-mayhem",
   "dependencies": {
-    "rfr": "*",
-    "grunt": "*",
+    "electron": "^5.0.6",
+    "grunt": "^1.0.4",
     "grunt-cli": "*",
-    "grunt-exec": "*",
-    "grunt-contrib-jade": "*",
+    "grunt-contrib-clean": "*",
     "grunt-contrib-coffee": "*",
     "grunt-contrib-compass": "*",
-    "grunt-contrib-clean": "*",
     "grunt-contrib-copy": "*",
+    "grunt-contrib-jade": "*",
+    "grunt-exec": "*",
     "js-yaml": "*",
-    "electron-prebuilt": "*"
+    "rfr": "*"
   },
   "engine": "node >= 0.10"
 }

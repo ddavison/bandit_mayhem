@@ -81,5 +81,5 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks('grunt-contrib-copy')
   grunt.loadNpmTasks('grunt-exec')
 
-  grunt.registerTask('default',    ['clean', 'copy', 'jade:development', 'coffee:development', 'compass:development', 'coffee:app', 'exec:run'])
+  grunt.registerTask('default',    ['clean', 'copy', 'jade:development', 'coffee:development', 'compass:development', 'coffee:app'])
   grunt.registerTask('release',    ['clean', 'copy', 'jade:production',  'coffee:production', 'coffee:app',  'compass:production'])

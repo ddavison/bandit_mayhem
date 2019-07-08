@@ -4,7 +4,6 @@ module BanditMayhem
   class MediaPlayer
     def initialize
       @mplayer = Audite.new
-      play_song(File.expand_path("./lib/media/soundtrack.mp3"))
     end
 
     def stop

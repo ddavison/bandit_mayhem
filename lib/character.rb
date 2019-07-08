@@ -1,6 +1,6 @@
 require 'item'
 require 'map'
-require 'market'
+require 'shop'
 require 'utils'
 
 require 'colorize'
@@ -24,7 +24,6 @@ module BanditMayhem
           y: -1
       }
 
-
       stats = {
         name: 'Character',
         health: 100,
@@ -32,6 +31,7 @@ module BanditMayhem
         str: 10,
         def: 0,
         level: 1,
+        gold: 0
       }.merge(add_stats)
 
       @items = []
@@ -166,7 +166,7 @@ module BanditMayhem
       interact_with(@location)
     end
 
-    # used for map detection. If the self collides with a market, for example.
+    # used for map detection. If the self collides with a shop, for example.
     def interact_with(location)
       return if location.nil?
 
@@ -179,7 +179,7 @@ module BanditMayhem
       if entity
         case entity['type']
         when 'shop'
-          shop = BanditMayhem::Market.new entity, self
+          shop = BanditMayhem::Shop.new(entity, self)
           while shop.shopping
             shop.shop
           end
@@ -233,7 +233,7 @@ module BanditMayhem
       # self will always go first.
       players_turn = true
 
-      Game.cls
+      Utils.cls
 
       puts "\t\t\t\tBATTLING: #{enemy.get_av('name')}".green
       puts "\t\t" + enemy.get_av('avatar', '(no avatar)').to_s + "\n\n"
@@ -266,7 +266,6 @@ module BanditMayhem
 
     # return hash
     def attack(target)
-      sleep(1)
       total_dmg = (calculate_attack_damage)
       target_health_after = target.get_av('health') - total_dmg
 
@@ -315,12 +314,12 @@ module BanditMayhem
           # run away
           @in_battle = false
           puts 'You ran away'.green
-          sleep(1)
-          Game.cls
+          # sleep(1)
+          Utils.cls
         else
           puts 'The bandit grabs you by your gear and pulls you back into the fight.'.red
-          sleep(1)
-          Game.cls
+          # sleep(1)
+          Utils.cls
         end
       elsif cmd.eql? 3
         # show the inventory, then let them choose.

@@ -8,20 +8,23 @@ type: town
 south: lynwood_plains
 
 poi:
-  -
-    type: shop
+  - type: shop
+    name: Lynwood Market
     x: 2
     y: 3
     inventory:
       - HealthPotion
       - LuckPotion
-  -
-    type: coinpurse
+
+  - type: npc
+    name: Harvey Dent
+
+  - type: coinpurse
     x: 6
     y: 6
     value: 70
-  -
-    type: door
+
+  - type: door
     x: 8
     y: 4
     destination:
