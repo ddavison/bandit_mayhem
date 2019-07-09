@@ -1,0 +1,13 @@
+---
+name: Map with an interior room
+width: 4
+height: 4
+
+interiors:
+  - width: 1
+    height: 1
+    x: 1
+    y: 1
+#    door:
+#      x: 2
+#      y: 1

@@ -149,6 +149,7 @@ describe BanditMayhem::Character do
 
     context 'warping' do
       before(:each) do
+        map.build!(subject)
         subject.location[:map] = map
       end
 
@@ -164,6 +165,7 @@ describe BanditMayhem::Character do
 
     context '[wasd]' do
       before(:each) do
+        map.build!(subject)
         subject.location[:map] = map
         subject.warp(x: 2, y: 2)
       end
@@ -238,7 +240,10 @@ describe BanditMayhem::Character do
           context 'adjacent world' do
             let(:map) { BanditMayhem::Map.new(file: File.absolute_path(File.join('spec', 'fixtures', 'maps', 'with_borders.yml'))) }
 
-            before(:each) { subject.warp(x: 1, y: 1) }
+            before(:each) do
+              map.build!(subject)
+              subject.warp(x: 1, y: 1)
+            end
 
             it 'can go north' do
               subject.move('w') # hit the north border
@@ -282,6 +287,21 @@ describe BanditMayhem::Character do
           it 'cant go through a horiz wall using w/s' do
             subject.move('w')
             expect(subject.location[:y]).to eq(subject.location[:last][:y])
+          end
+        end
+
+        context 'interiors' do
+          let(:map) { BanditMayhem::Map.new(file: File.absolute_path(File.join('spec', 'fixtures', 'maps', 'interior.yml'))) }
+
+          before(:each) do
+            subject.warp(x: 1, y: 2)
+          end
+
+          it 'cant go through interior walls' do
+            expect(subject.location).to include({x: 1, y: 2})
+            subject.move('d')
+
+            expect(subject.location).to include(subject.location[:last])
           end
         end
       end
