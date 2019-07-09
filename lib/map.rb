@@ -254,13 +254,12 @@ module BanditMayhem
     def get_entity_at(location)
       raise 'need x and y coordinates' unless location[:x]&.is_a? Numeric and location[:y]&.is_a? Numeric
 
-      ret = nil
       if @poi&.any?
         @poi.each do |poi|
-          ret = poi if poi['x'] == location[:x] && poi['y'] == location[:y]
+          return poi if poi['x'] == location[:x] && poi['y'] == location[:y]
         end
       end
-      ret
+      nil
     end
 
     def get_char_at(location)

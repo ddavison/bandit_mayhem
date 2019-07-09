@@ -297,7 +297,7 @@ describe BanditMayhem::Character do
             subject.warp(x: 1, y: 2)
           end
 
-          it 'warps back when colliding with an interior wall' do
+          it 'cant go through interior walls' do
             expect(subject.location).to include({x: 1, y: 2})
             subject.move('d')
 

@@ -154,7 +154,7 @@ module BanditMayhem
           if @location[:x] == @location[:map].attributes[:width]
             if @location[:map].attributes[:east]
               @location[:map] = BanditMayhem::Map.new(@location[:map].attributes[:east])
-              @location[:x] = @location[:map].attributes[:width]
+              @location[:x] = 1
             else
               puts "can't go east!"
             end
