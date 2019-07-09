@@ -10,6 +10,10 @@ require 'colorize'
 require 'yaml'
 
 module BanditMayhem
+  include Weapons
+  include Characters
+  include Items
+
   class Game
     class Commands < BanditMayhem::Commands
       def initialize(game_obj)

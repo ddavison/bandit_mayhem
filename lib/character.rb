@@ -203,65 +203,25 @@ module BanditMayhem
             # do later (this is for greater foes)
           end
 
-          battle(enemy_to_fight)
-        end
+          BanditMayhem::Battle.new(self, enemy_to_fight).fight!
 
-        case entity['type']
         when 'wall', 'tree'
           if @items.include? BanditMayhem::Items::TraversingRing
             @location[:map].remove_entity(@location)
           else
             warp(@location[:last])
           end
+
+        when 'npc'
+          require 'dialogue'
+
+          # logic for dialog here
+          BanditMayhem::Dialogue.new(self, BanditMayhem::Characters::Npcs.const_get(entity['name'])).talk!
+          warp(@location[:last])
         end
       end
 
       @location[:map].draw_map(self)
-    end
-
-    # ==== MAIN BATTLE FUNC === #
-    def battle(enemy)
-      if BanditMayhem::Settings.new.get('music', true)
-        Game.media_player.play_song(File.expand_path('./lib/media/battle.mp3'))
-      end
-
-      set_av('attacks', 0)
-      enemy.set_av('attacks', 0)
-
-      @in_battle = true
-
-      # self will always go first.
-      players_turn = true
-
-      Utils.cls
-
-      puts "\t\t\t\tBATTLING: #{enemy.get_av('name')}".green
-      puts "\t\t" + enemy.get_av('avatar', '(no avatar)').to_s + "\n\n"
-
-      while @in_battle
-        puts 'Your health: ' + get_av('health').to_s.red
-        puts enemy.get_av('name') + '\'s health: ' + enemy.get_av('health').to_s.red
-        puts '------------------------'
-
-        if players_turn
-          puts 'Your turn...'.green
-          fight_menu(enemy)
-
-          loot(enemy) if enemy.dead?
-          players_turn = false
-          @location[:map].remove_entity(@location)
-        else
-          # for now, all the enemy will do, is attack.
-          puts "#{enemy.get_av('name')}'s turn...".red
-
-          attack(enemy)
-          players_turn = true
-        end
-      end
-
-      if BanditMayhem::Settings.new.get('music', true)
-        Game.media_player.stop
-      end
     end
 
     # return hash
@@ -285,50 +245,7 @@ module BanditMayhem
         get_av('attacks', 0).to_i + 1
       )
 
-      if target.dead?
-        puts src.get_av('name').to_s.red + ' has slain ' + target.get_av('name').to_s.blue
-        battle_aftermath[:target_died] = true
-        @in_battle = false
-      end
-
-      battle_aftermath
-    end
-
-    def fight_menu(enemy)
-      puts 'Fight options...'
-      puts '----------------'
-      puts '1. ' + 'Attack'.red
-      puts '2. ' + 'Run'.green
-      puts '3. ' + 'Use item'.blue
-      puts 'Enter an option:'
-
-      STDOUT.flush
-      cmd = gets.chomp
-      cmd = cmd.to_i
-
-      if cmd.eql? 1
-        # attack
-        attack(enemy)
-      elsif cmd.eql? 2
-        if BanditMayhem::Utils.shuffle_percent(get_av('luck'))
-          # run away
-          @in_battle = false
-          puts 'You ran away'.green
-          # sleep(1)
-          Utils.cls
-        else
-          puts 'The bandit grabs you by your gear and pulls you back into the fight.'.red
-          # sleep(1)
-          Utils.cls
-        end
-      elsif cmd.eql? 3
-        # show the inventory, then let them choose.
-        show_inventory
-        puts 'Enter an item to use:'
-        STDOUT.flush
-        item = gets.chomp
-        use_item(item.to_i)
-      end
+      battle_aftermath if target.dead?
     end
 
     private
