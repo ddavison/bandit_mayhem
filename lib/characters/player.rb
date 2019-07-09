@@ -19,9 +19,9 @@ module BanditMayhem
         # ])
 
         @location = {
-            map: BanditMayhem::Map.new('lynwood'),
-            x: 14,
-            y: 5
+          map: BanditMayhem::Map.new('lynwood'),
+          x: 45,
+          y: 3
         }.to_symbolized_hash
       end
     end

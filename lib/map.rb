@@ -26,11 +26,12 @@ module BanditMayhem
     SHOP               = '$'.yellow
     PLAYER             = '@'.cyan
     COINPURSE          = '¢'.yellow
-    ITEM               = '!'.blue
+    ITEM               = '?'.yellow
     BANDIT             = '■'.red
-    OTHER              = '?'
+    QUEST              = '!'.blue
     TREE               = '∆'.light_green
     NPC                = '∙'.cyan
+    OTHER              = '?'
   end
 
   class Map
@@ -88,118 +89,96 @@ module BanditMayhem
         @boundary_width.times do |x|
           non_surface = false
           case x
-            when 0
-              if y == 0
-                @matrix[y][x] = Maps::CORNER_UPPER_LEFT
+          when 0
+            if y == 0
+              @matrix[y][x] = Maps::CORNER_UPPER_LEFT
 
-                next
-              elsif y == @boundary_height - 1
-                @matrix[y][x] = Maps::CORNER_LOWER_LEFT
+              next
+            elsif y == @boundary_height - 1
+              @matrix[y][x] = Maps::CORNER_LOWER_LEFT
 
-                next
-              else
-                @matrix[y][x] = Maps::WALL_VERT
-
-                next
-              end
-            when @boundary_width - 1
-              if y == 0
-                @matrix[y][x] = Maps::CORNER_UPPER_RIGHT
-
-                next
-              elsif y == @boundary_height - 1
-                @matrix[y][x] = Maps::CORNER_LOWER_RIGHT
-
-                next
-              else
-                @matrix[y][x] = Maps::WALL_VERT
-
-                next
-              end
+              next
             else
-              if y == 0 || y == @boundary_height - 1
-                @matrix[y][x] = Maps::WALL_HORIZ
+              @matrix[y][x] = Maps::WALL_VERT
 
-                next
-              end
+              next
+            end
+          when @boundary_width - 1
+            if y == 0
+              @matrix[y][x] = Maps::CORNER_UPPER_RIGHT
+              next
+            elsif y == @boundary_height - 1
+              @matrix[y][x] = Maps::CORNER_LOWER_RIGHT
+              next
+            else
+              @matrix[y][x] = Maps::WALL_VERT
+              next
+            end
+          else
+            if y == 0 || y == @boundary_height - 1
+              @matrix[y][x] = Maps::WALL_HORIZ
+              next
+            end
 
-              if x == player.location[:x] && y == player.location[:y]
-                @matrix[y][x] = Maps::PLAYER
-                non_surface = true
+            if x == player.location[:x] && y == player.location[:y]
+              @matrix[y][x] = Maps::PLAYER
+              next
+            end
 
-                next
-              end
+            @matrix[y][x] = map_surface
 
-              @matrix[y][x] = map_surface
-
-              if @poi&.any?
-                @poi.each do |poi|
-                  @locations << [poi['x'], poi['y']] unless @locations.include? [poi['x'], poi['y']]
-                  if player.location[:x] == poi['x'] && player.location[:y] == poi['y']
-                    if poi['type'] == 'item' || poi['type'] == 'weapon' || poi['type'] == 'coinpurse'
-                      @poi.delete(poi)
-                    end
-                    if poi['consumable']
-                      if poi['consumable'].is_a? Hash
-                        # there is a condition.
-                        @poi.delete(poi) if player.get_av(poi['consumable']['unless'], false)
-                      else
-                        @poi.delete(poi) if @poi.include? poi
-                      end
-                    end
-
-                    return player.interact_with poi
+            if @poi&.any?
+              @poi.each do |poi|
+                @locations << [poi['x'], poi['y']] unless @locations.include? [poi['x'], poi['y']]
+                if player.location[:x] == poi['x'] && player.location[:y] == poi['y']
+                  if poi['type'] == 'item' || poi['type'] == 'weapon' || poi['type'] == 'coinpurse'
+                    @poi.delete(poi)
                   end
-                  if x == poi['x'] && y == poi['y']
-                    case poi['type']
-                      when 'shop'
-                        @matrix[y][x] = Maps::SHOP
-
-                        non_surface = true
-                      when 'coinpurse'
-                        @matrix[y][x] = Maps::COINPURSE
-
-                        non_surface = true
-                      when 'item', 'weapon'
-                        @matrix[y][x] = Maps::ITEM
-
-                        non_surface = true
-                      when 'bandit'
-                        @matrix[y][x] = Maps::BANDIT
-
-                        non_surface = true
-                      when 'tree'
-                        @matrix[y][x] = Maps::TREE
-
-                        non_surface = true
-                      when 'cave'
-                        @matrix[y][x] = Maps::CAVE
-
-                        non_surface = true
-                      when 'door'
-                        @matrix[y][x] = Maps::DOOR
-
-                        non_surface = true
-                      when 'wall'
-                        non_surface = true
-                        case poi['direction']
-                          when 'vertical', 'vert'
-                            @matrix[y][x] = Maps::WALL_VERT
-
-                        when 'horizontal', 'horiz'
-                            @matrix[y][x] = Maps::WALL_HORIZ
-                        end
-                      else
-                        @matrix[y][x] = Maps::OTHER
-
-                        non_surface = true
+                  if poi['consumable']
+                    if poi['consumable'].is_a? Hash
+                      # there is a condition.
+                      @poi.delete(poi) if player.get_av(poi['consumable']['unless'], false)
+                    else
+                      @poi.delete(poi) if @poi.include? poi
                     end
+                  end
+
+                  return player.interact_with poi
+                end
+                if x == poi['x'] && y == poi['y']
+                  case poi['type']
+                  when 'shop'
+                    @matrix[y][x] = Maps::SHOP
+                  when 'coinpurse'
+                    @matrix[y][x] = Maps::COINPURSE
+                  when 'item', 'weapon'
+                    @matrix[y][x] = Maps::ITEM
+                  when 'bandit'
+                    @matrix[y][x] = Maps::BANDIT
+                  when 'tree'
+                    @matrix[y][x] = Maps::TREE
+                  when 'cave'
+                    @matrix[y][x] = Maps::CAVE
+                  when 'door'
+                    @matrix[y][x] = Maps::DOOR
+                  when 'wall'
+                    case poi['direction']
+                    when 'vertical', 'vert'
+                      @matrix[y][x] = Maps::WALL_VERT
+                    when 'horizontal', 'horiz'
+                      @matrix[y][x] = Maps::WALL_HORIZ
+                    end
+                  when 'npc'
+                    @matrix[y][x] = Maps::NPC
                     next
+                  else
+                    @matrix[y][x] = Maps::OTHER
                   end
+                  next
                 end
               end
+            end
           end
-          non_surface = false
         end
 
       end

@@ -32,11 +32,35 @@ poi:
       x: 2
       y: 1
 
-interiors:
-  - x: 15
+  # Cezara's Place
+  - type: npc
+    name: Cezara
+    x: 45
     y: 5
+
+  - type: wall
+    direction: horiz
+    x: 45
+    y: 4
+  - type: wall
+    direction: horiz
+    x: 44
+    y: 4
+  - type: wall
+    direction: horiz
+    x: 43
+    y: 4
+  - type: wall
+    direction: horiz
+    x: 42
+    y: 4
+
+interiors:
+  # Cezara's Place
+  - x: 40
+    y: 2
     width: 5
     height: 5
     door:
-      x: 2
-      y: 1
+      x: 1
+      y: 4

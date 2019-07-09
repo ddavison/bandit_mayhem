@@ -7,7 +7,10 @@ module BanditMayhem
         stats = {
           name: 'Townsperson',
           health: 100,
-          gold: 10
+          gold: 10,
+          avatar: <<~AVATAR
+
+          AVATAR
         }.merge(add_stats)
 
         super(stats)
